@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demandio - AI ESG Copilot & Live Demo</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Custom Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'demandio-blue': '#1e3a8a',
+                        'demandio-light': '#3b82f6',
+                        'demandio-green': '#10b981',
+                        'demandio-yellow': '#f59e0b',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        /* Landing Page Styles */
+        .hero-bg {
+            background-image: url('https://placehold.co/1200x600/1e3a8a/ffffff?text=AI+ESG+Copilot+for+Auto+Aftermarket');
+            background-size: cover;
+            background-position: center;
+        }
+        .section-header::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 4px;
+            background-color: #3b82f6;
+            margin-top: 8px;
+            border-radius: 2px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        /* Report Generator Styles */
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .step-content { display: none; }
+        .step-content.active { display: block; animation: fadeIn 0.4s ease-in-out; }
+        /* Ensure proper padding for fixed footer */
+        #vsme-form {
+            padding-bottom: 70px; /* Adds space for the fixed navigation footer (approx 60px height) */
+        }
+        /* Padding for screening section to clear its own fixed footer */
+        #screening-section .bg-white {
+            padding-bottom: 90px;
+        }
+
+        /* Print Styles */
+        @media print {
+            .no-print, #landing-page, #app-container, #screening-section {
+                display: none !important;
+            }
+            #report-output {
+                display: block !important;
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                box-shadow: none;
+            }
+            body {
+                background: white;
+                margin: 0;
+                padding: 0;
+            }
+            @page {
+                size: A4;
+                margin: 20mm 15mm;
+            }
+            .report-container {
+                max-width: 100%;
+                margin: 0;
+            }
+        }
+
+        /* Report Output Formatting */
+        .report-container {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333; max-width: 210mm; margin: 0 auto;
+        }
+        .report-container h1 { font-size: 24px; color: #005691; margin-bottom: 5px; }
+        .report-container h2 { font-size: 18px; border-bottom: 2px solid #333; margin-top: 25px; padding-bottom: 5px; color: #2c3e50; }
+        .report-container h3 { font-size: 14px; background-color: #e2e8f0; padding: 5px; margin-top: 15px; font-weight: bold; border-left: 4px solid #005691; }
+        .report-container h4 { font-size: 13px; color: #005691; margin-top: 10px; margin-bottom: 5px; font-weight: bold; }
+        .report-container table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 13px; }
+        .report-container th, .report-container td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+        .report-container th { background-color: #f8fafc; width: 45%; font-weight: 600; color: #475569; }
+    </style>
+</head>
+<body dir="ltr">
+
+    <script>
+        const content = {
+            en: {
+                navHome: "Home",
+                navProblem: "Problem",
+                navSolution: "Solution",
+                navFeatures: "Features",
+                navDemo: "Demo",
+                navContact: "Contact",
+                heroTitle: "The AI ESG Copilot for Automotive SMEs",
+                heroSubtitle: "Streamline CSRD, Scope 3, and Circularity Compliance for Garages & Distributors in the EU.",
+                heroButton: "Request a Demo",
+                sectionProblem: "The Challenge for SMEs",
+                problemText: "Small and mid-sized automotive businesses in Europe face growing ESG pressure (CSRD, CBAM, Battery Passport) but lack the time, tools, and expertise to comply. Over 70% are unprepared, relying on manual spreadsheets.",
+                barrier1: "Lack of Time & Resources",
+                barrier2: "Confusing ESG Frameworks",
+                barrier3: "No Internal Expertise",
+                barrier4: "Increasing OEM Pressure",
+                sectionSolution: "Demandio: The Simple Solution",
+                solutionText: "Demandio is an AI-powered ESG and circularity platform built specifically for the automotive aftermarket. It turns complex regulations into simple, profitable actions, enabling compliance and green growth.",
+                feature1Title: "AI ESG Copilot",
+                feature1Desc: "Step-by-step guidance using plain, garage-specific language, not ESG jargon. Perfect for non-experts.",
+                feature2Title: "Part-Level CO₂ Tracker",
+                feature2Desc: "Calculate precise Scope 3 emissions for every part and repair job using proprietary SKU-to-CO₂ data.",
+                feature3Title: "One-Click ESG Kit (CSRD-Lite)",
+                feature3Desc: "Auto-generate buyer-ready, audit-ready compliance reports, including Scope 1-3 carbon footprint and circularity metrics.",
+                feature4Title: "EU Subsidy Finder",
+                feature4Desc: "Automatically match your business with relevant EU/National green grants and subsidies, and generate application forms.",
+                sectionFeatures: "Core Features That Drive Compliance",
+                sectionDemo: "See Demandio in Action",
+                demoText: "Discover how Demandio's AI Copilot can simplify your ESG compliance and unlock green funding opportunities. Book a free, personalized demonstration tailored to your garage or distribution business.",
+                demoButton: "Book Your Demo",
+                trustSection: "Why Trust Demandio?",
+                trust1Title: "Built for EU Regulations",
+                trust1Desc: "Fully aligned with CSRD, CBAM, and EU Green Deal requirements, reducing your risk of penalties.",
+                trust2Title: "Automotive Vertical SaaS",
+                trust2Desc: "Deeply embedded in garage/distributor workflows (Invoice OCR, SKU data) unlike generic ESG tools.",
+                trust3Title: "Dutch/EU Launchpad",
+                trust3Desc: "Headquartered in the Netherlands, the ideal ecosystem for rapid ESG and circular economy growth.",
+                callToAction: "Ready to simplify your ESG compliance and unlock green funding?",
+                footerContact: "Contact Information",
+                footerEmail: "Email: mike@demandio.cloud",
+                footerPhone: "Phone: +31 6 1234 5678 (EU Office Mock)",
+                footerAddress: "HQ: Amsterdam, The Netherlands",
+                footerLegal: "© 2025 Demandio. All rights reserved. | Privacy Policy | Terms of Service",
+                loadingText: "Processing Request & Preparing Demo Environment...",
+                confirmTitle: "Demo Access Ready!",
+                redirectText: "Success! Your personalized request has been submitted. You will be automatically redirected to the Live Demo environment in a moment.",
+                confirmClose: "Start Demo"
+            },
+            nl: {
+                navHome: "Startpagina",
+                navProblem: "Probleem",
+                navSolution: "Oplossing",
+                navFeatures: "Functies",
+                navDemo: "Demo Aanvragen",
+                navContact: "Contact",
+                heroTitle: "De AI ESG Copilot voor Automotive MKB",
+                heroSubtitle: "Stroomlijn CSRD, Scope 3 en Circulariteit Conformiteit voor Garages & Distributeurs in de EU.",
+                heroButton: "Vraag een Demo Aan",
+                sectionProblem: "De Uitdaging voor MKB",
+                problemText: "Kleine en middelgrote autobedrijven in Europa staan onder toenemende ESG-druk (CSRD, CBAM, Batterijpaspoort) maar missen de tijd, tools en expertise om te voldoen. Meer dan 70% is onvoorbereid en vertrouwt op handmatige spreadsheets.",
+                barrier1: "Gebrek aan Tijd & Middelen",
+                barrier2: "Verwarrende ESG Frameworks",
+                barrier3: "Geen Interne Expertise",
+                barrier4: "Toenemende OEM Druk",
+                sectionSolution: "Demandio: De Eenvoudige Oplossing",
+                solutionText: "Demandio is een AI-aangedreven ESG- en circulariteitsplatform dat specifiek is gebouwd voor de automotive aftermarket. Het zet complexe regelgeving om in eenvoudige, winstgevende acties, waardoor compliance en groene groei mogelijk worden.",
+                feature1Title: "AI ESG Copilot",
+                feature1Desc: "Stapsgewijze begeleiding in duidelijke, garage-specifieke taal, geen ESG-jargon. Perfect voor niet-experts.",
+                feature2Title: "CO₂-Tracker op Onderdeelniveau",
+                feature2Desc: "Bereken nauwkeurige Scope 3-emissies voor elk onderdeel en elke reparatie met behulp van eigen SKU-naar-CO₂-gegevens.",
+                feature3Title: "Eén-Klik ESG Kit (CSRD-Lite)",
+                feature3Desc: "Genereer automatisch auditklare compliance-rapporten, inclusief Scope 1-3 koolstofvoetafdruk en circulariteitsstatistieken, klaar voor de koper.",
+                feature4Title: "EU Subsidiezoeker",
+                feature4Desc: "Koppel uw bedrijf automatisch aan relevante EU/Nationale groene subsidies en genereer aanvraagformulieren.",
+                sectionFeatures: "Kernfuncties die Compliance Stimuleren",
+                sectionDemo: "Bekijk Demandio in Actie",
+                demoText: "Ontdek hoe Demandio's AI Copilot uw ESG-compliance kan vereenvoudigen en groene financieringsmogelijkheden kan ontsluiten. Boek een gratis, gepersonaliseerde demonstratie op maat van uw garage- of distributiebedrijf.",
+                demoButton: "Boek Uw Demo",
+                trustSection: "Waarom Demandio Vertrouwen?",
+                trust1Title: "Gebouwd voor EU-Regelgeving",
+                trust1Desc: "Volledig afgestemd op CSRD, CBAM en de EU Green Deal, waardoor uw risico op boetes wordt verminderd.",
+                trust2Title: "Automotive Vertical SaaS",
+                trust2Desc: "Diep ingebed in de workflows van garages/distributeurs (Factuur OCR, SKU-gegevens) in tegenstelling tot generieke ESG-tools.",
+                trust3Title: "Nederlands/EU Lanceerplatform",
+                trust3Desc: "Hoofdkantoor in Nederland, het ideale ecosysteem voor snelle ESG- en circulaire economie-groei.",
+                callToAction: "Klaar om uw ESG-compliance te vereenvoudigen en groene financiering te ontsluiten?",
+                footerContact: "Contactgegevens",
+                footerEmail: "E-mail: mike@demandio.cloud",
+                footerPhone: "Telefoon: +31 6 1234 5678 (EU Kantoor Mock)",
+                footerAddress: "HQ: Amsterdam, Nederland",
+                footerLegal: "© 2025 Demandio. Alle rechten voorbehouden. | Privacybeleid | Servicevoorwaarden",
+                loadingText: "Aanvraag Verwerken & Demo-omgeving Voorbereiden...",
+                confirmTitle: "Demo-toegang Klaar!",
+                redirectText: "Succes! Uw persoonlijke aanvraag is ingediend. U wordt zo dadelijk automatisch doorgestuurd naar de Live Demo-omgeving.",
+                confirmClose: "Start Demo"
+            }
+        };
+
+        let currentLang = 'en';
+        let currentStep = 0;
+        let stepsList = [];
+        let config = {};
+
+        function updateContent() {
+            const langData = content[currentLang];
+            document.querySelectorAll('[data-lang-key]').forEach(element => {
+                const key = element.getAttribute('data-lang-key');
+                if (langData[key]) {
+                    element.innerHTML = langData[key];
+                }
+            });
+            const switchButton = document.getElementById('lang-switch');
+            switchButton.textContent = currentLang === 'en' ? 'NL' : 'EN';
+        }
+
+        function switchLanguage() {
+            currentLang = currentLang === 'en' ? 'nl' : 'en';
+            updateContent();
+        }
+
+        // ===========================================
+        // LANDING PAGE -> DEMO APP TRANSITION LOGIC
+        // ===========================================
+
+        function showDemoApp() {
+            // Hide the landing page and overlay
+            document.getElementById('landing-page').classList.add('hidden');
+            document.getElementById('confirmation-overlay').classList.add('hidden');
+            
+            // Show the initial screening section of the Demo App
+            document.getElementById('screening-section').classList.remove('hidden');
+            window.scrollTo(0, 0); // Scroll to top for the new view
+        }
+
+        function handleDemoSubmission(event) {
+            event.preventDefault();
+
+            const form = document.getElementById('demo-form');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const overlay = document.getElementById('confirmation-overlay');
+            const spinner = document.getElementById('loading-spinner');
+            const message = document.getElementById('confirmation-message');
+            const confirmTitle = document.getElementById('confirm-title');
+            const confirmBody = document.getElementById('confirm-body');
+            const confirmCloseBtn = document.getElementById('confirm-close-btn');
+            const loadingStatusText = document.getElementById('loading-text-status');
+
+            // 1. Show the loading overlay
+            overlay.classList.remove('hidden');
+            spinner.classList.remove('hidden');
+            message.classList.add('hidden');
+
+            // Set loading state text
+            loadingStatusText.setAttribute('data-lang-key', 'loadingText');
+            updateContent();
+
+            // Reset the form fields immediately
+            form.reset();
+
+            // 2. Simulate API call/processing time
+            setTimeout(() => {
+                // 3. Hide spinner and show confirmation/redirection message
+                spinner.classList.add('hidden');
+
+                // Set redirection message content
+                confirmTitle.setAttribute('data-lang-key', 'confirmTitle');
+                confirmBody.setAttribute('data-lang-key', 'redirectText');
+                confirmCloseBtn.setAttribute('data-lang-key', 'confirmClose');
+
+                // Button action and automatic redirect now point to showDemoApp
+                confirmCloseBtn.onclick = showDemoApp;
+                confirmCloseBtn.classList.remove('hidden');
+
+                message.classList.remove('hidden');
+                updateContent(); // Update text content
+
+                // 4. Automatic Redirect after a short delay (2 seconds in the confirmation view)
+                setTimeout(showDemoApp, 2000);
+
+            }, 3000); // 3 second delay for "beautiful loading" effect
+        }
+        
+        // ===========================================
+        // REPORT GENERATOR (VSME) LOGIC
+        // ===========================================
+        
+        function checkScreening() {
+            const isListed = document.querySelector('input[name="isListed"]:checked').value === 'yes';
+            document.getElementById('listed-warning').classList.toggle('hidden', !isListed);
+            document.getElementById('startBtn').disabled = isListed;
+            document.getElementById('startBtn').classList.toggle('opacity-50', isListed);
+        }
+
+        function startApp() {
+            config.listed = document.querySelector('input[name="isListed"]:checked').value === 'yes';
+            if(config.listed) return;
+
+            config.bpModule = document.getElementById('reportPurpose').value === 'partner';
+            config.comprehensive = document.querySelector('input[name="hasPolicies"]:checked').value === 'yes';
+
+            // Define Steps Flow
+            stepsList = [1, 2, 3, 'gov']; // Basic steps
+
+            if(config.bpModule) stepsList.push('bp');
+
+            if(config.comprehensive) {
+                stepsList.push('c1', 'c2');
+                document.getElementById('config-summary').innerText = "Option B: Basic + Comprehensive";
+                document.getElementById('b1_option').value = "Option B: Basic + Comprehensive";
+            } else {
+                document.getElementById('config-summary').innerText = "Option A: Basic Module";
+                document.getElementById('b1_option').value = "Option A: Basic Module";
+            }
+
+            stepsList.push('generate');
+
+            // Render Progress Bar
+            renderProgressBar();
+
+            // Show App
+            document.getElementById('screening-section').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+            showStepIndex(0);
+        }
+
+        // Navigation
+        function renderProgressBar() {
+            const container = document.getElementById('progress-bar-container');
+            container.innerHTML = '';
+            stepsList.forEach((step, idx) => {
+                let label = step;
+                if(step===1) label="Gen"; if(step===2) label="Env"; if(step===3) label="Soc";
+                if(step==='gov') label="Gov"; if(step==='bp') label="BP/Chain";
+                if(step==='c1') label="C-Env"; if(step==='c2') label="C-Soc/Gov";
+                if(step==='generate') label="End";
+
+                const node = document.createElement('div');
+                node.className = "flex flex-col items-center min-w-[30px] mx-1 sm:min-w-[50px] sm:mx-2";
+                node.innerHTML = `
+                    <div id="ind-${idx}" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold border-2 border-white shadow bg-gray-300 text-gray-600 text-xs">${idx+1}</div>
+                    <span class="text-[9px] sm:text-[10px] mt-1 font-medium text-gray-500">${label}</span>
+                `;
+                container.appendChild(node);
+            });
+        }
+
+        function showStepIndex(index) {
+            currentStep = index;
+            const stepId = stepsList[index];
+
+            document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(`step-${stepId}`).classList.add('active');
+
+            // Update Indicators
+            stepsList.forEach((_, idx) => {
+                const ind = document.getElementById(`ind-${idx}`);
+                if(idx < index) {
+                    ind.className = "w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold border-2 border-white shadow bg-green-500 text-white text-xs";
+                    ind.innerHTML = "✓";
+                } else if(idx === index) {
+                    ind.className = "w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold border-2 border-white shadow bg-blue-600 text-white text-xs transform scale-110";
+                    ind.innerHTML = idx + 1;
+                } else {
+                    ind.className = "w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold border-2 border-white shadow bg-gray-300 text-gray-600 text-xs";
+                    ind.innerHTML = idx + 1;
+                }
+            });
+
+            document.getElementById('prevBtn').classList.toggle('hidden', index === 0);
+            document.getElementById('nextBtn').classList.toggle('hidden', index === stepsList.length - 1);
+            window.scrollTo(0,0);
+        }
+
+        // Fill Fake Data
+        function fillFakeData(step) {
+            if(step === 1) {
+                document.getElementById('b1_name').value = "AutoParts NL B.V.";
+                document.getElementById('b1_basis').value = "Individual basis";
+                document.getElementById('b1_legal_form').value = "B.V.";
+                document.getElementById('b1_nace').value = "45.31";
+                document.getElementById('b1_country').value = "Netherlands";
+                document.getElementById('b1_turnover').value = "12500000";
+                document.getElementById('b1_employees').value = "45";
+                document.getElementById('b2_practices').value = "Installation of LED lighting and consolidation of shipments to reduce CO2 per delivery.";
+            }
+            if(step === 2) {
+                document.getElementById('b3_energy_total').value = "480";
+                document.getElementById('b3_energy_ren').value = "480";
+                document.getElementById('b3_energy_nonren').value = "0";
+                document.getElementById('b3_scope1').value = "48.5";
+                document.getElementById('b3_scope2').value = "0";
+                document.getElementById('b4_pollution').value = "None (Minimal non-hazardous vehicle maintenance fluids)";
+                document.getElementById('b5_sensitive').value = "0";
+                document.getElementById('b6_water').value = "450";
+                document.getElementById('b7_waste_haz').value = "0.2";
+                document.getElementById('b7_waste_recycled').value = "12";
+            }
+            if(step === 3) {
+                document.getElementById('b8_perm').value = "35"; document.getElementById('b8_temp').value = "10";
+                document.getElementById('b8_female').value = "16";
+                document.getElementById('b9_accidents').value = "1";
+                document.getElementById('b10_minwage').value = "Yes";
+            }
+            if(step === 4) {
+                document.getElementById('b11_convictions').value = "0"; document.getElementById('b11_fines').value = "0";
+            }
+            // ENHANCED BP MODULE FAKE DATA
+            if(step === 'bp') {
+                document.getElementById('bp_code').value = "Yes (covers human rights/environment)";
+                document.getElementById('bp_grievance').value = "Yes (accessible mechanism exists)";
+                document.getElementById('bp_payment').value = "30 days (average)";
+                document.getElementById('bp_excluded_rev').value = "0%";
+                document.getElementById('bp_scope3_status').value = "Estimated";
+                document.getElementById('bp_climate_risks').value = "Physical risk: Increased extreme heat affecting warehouse cooling (Low). Transition risk: None identified.";
+            }
+            if(step === 'c1') {
+                document.getElementById('c1_strategy').value = "Wholesale of auto parts in Benelux. Key focus on electric vehicle maintenance parts. Key partners: Bosch, ZF.";
+                document.getElementById('c2_policies').value = "Sustainability managed by HSE committee reporting to the Board. Policies updated annually based on external risk assessment.";
+                document.getElementById('c3_targets').value = "Scope 1: -50% by 2030 (Base 2022). Scope 3 (Transport): -20% by 2035.";
+                document.getElementById('c4_risks').value = "Physical risk: Flooding in HQ region (Low). Adaptation: Site infrastructure protected and insurance coverage adjusted. Financial impact: Minimal.";
+            }
+            if(step === 'c2') {
+                document.getElementById('c5_mgmt_gender').value = "40% Female";
+                document.getElementById('c6_policy').value = "Yes";
+                document.getElementById('c7_incidents').value = "None";
+                document.getElementById('c8_revenue').value = "0% excluded sectors";
+                document.getElementById('c9_board_gender').value = "1 Female / 3 Male (25% Female)";
+            }
+        }
+
+        // Generate Report
+        function generateReport() {
+            // Header
+            document.getElementById('rpt_company').innerText = document.getElementById('b1_name').value;
+            document.getElementById('rpt_date').innerText = new Date().toLocaleDateString();
+            document.getElementById('res_b1_option').innerText = document.getElementById('b1_option').value;
+            document.getElementById('rpt_type').innerText = config.comprehensive ? "Option B (Comprehensive)" : (config.bpModule ? "Option BP (Business Partner)" : "Option A (Basic)");
+
+            // Basic Mapping
+            document.getElementById('res_b1_form').innerText = document.getElementById('b1_legal_form').value;
+            document.getElementById('res_b1_nace').innerText = document.getElementById('b1_nace').value;
+            document.getElementById('res_b1_turnover').innerText = document.getElementById('b1_turnover').value;
+            document.getElementById('res_b1_emp').innerText = document.getElementById('b1_employees').value;
+            document.getElementById('res_b2_prac').innerText = document.getElementById('b2_practices').value;
+
+            document.getElementById('res_b3_total').innerText = document.getElementById('b3_energy_total').value;
+            document.getElementById('res_b3_ren').innerText = document.getElementById('b3_energy_ren').value;
+            document.getElementById('res_b3_non').innerText = document.getElementById('b3_energy_nonren').value;
+            document.getElementById('res_b3_s1').innerText = document.getElementById('b3_scope1').value;
+            document.getElementById('res_b3_s2').innerText = document.getElementById('b3_scope2').value;
+            document.getElementById('res_b4').innerText = document.getElementById('b4_pollution').value;
+            document.getElementById('res_b5').innerText = document.getElementById('b5_sensitive').value;
+            document.getElementById('res_b6').innerText = document.getElementById('b6_water').value;
+            document.getElementById('res_b7').innerText = document.getElementById('b7_waste_recycled').value;
+
+            document.getElementById('res_b8_perm').innerText = document.getElementById('b8_perm').value;
+            document.getElementById('res_b8_female').innerText = document.getElementById('b8_female').value;
+            document.getElementById('res_b9').innerText = document.getElementById('b9_accidents').value;
+            document.getElementById('res_b10').innerText = document.getElementById('b10_minwage').value;
+            document.getElementById('res_b11_con').innerText = document.getElementById('b11_convictions').value;
+            document.getElementById('res_b11_fin').innerText = document.getElementById('b11_fines').value;
+
+            // BP Module (Enhanced)
+            if(config.bpModule) {
+                document.getElementById('rpt_bp_section').classList.remove('hidden');
+                document.getElementById('res_bp_code').innerText = document.getElementById('bp_code').value;
+                document.getElementById('res_bp_grievance').innerText = document.getElementById('bp_grievance').value;
+                document.getElementById('res_bp_pay').innerText = document.getElementById('bp_payment').value;
+                document.getElementById('res_bp_excluded_rev').innerText = document.getElementById('bp_excluded_rev').value;
+                document.getElementById('res_bp_scope3_status').innerText = document.getElementById('bp_scope3_status').value;
+                document.getElementById('res_bp_climate_risks').innerText = document.getElementById('bp_climate_risks').value;
+            } else {
+                document.getElementById('rpt_bp_section').classList.add('hidden');
+            }
+
+            // Comprehensive Module
+            if(config.comprehensive) {
+                document.getElementById('rpt_comp_section').classList.remove('hidden');
+                document.getElementById('res_c1').innerText = document.getElementById('c1_strategy').value;
+                document.getElementById('res_c2').innerText = document.getElementById('c2_policies').value;
+                document.getElementById('res_c3').innerText = document.getElementById('c3_targets').value;
+                document.getElementById('res_c4').innerText = document.getElementById('c4_risks').value;
+                document.getElementById('res_c5').innerText = document.getElementById('c5_mgmt_gender').value;
+                document.getElementById('res_c6').innerText = document.getElementById('c6_policy').value;
+                document.getElementById('res_c7').innerText = document.getElementById('c7_incidents').value;
+                document.getElementById('res_c8').innerText = document.getElementById('c8_revenue').value;
+                document.getElementById('res_c9').innerText = document.getElementById('c9_board_gender').value;
+            } else {
+                document.getElementById('rpt_comp_section').classList.add('hidden');
+            }
+
+            // Show Report
+            document.getElementById('app-container').classList.add('hidden');
+            document.getElementById('report-output').classList.remove('hidden');
+            window.scrollTo(0, 0);
+        }
+
+        // Initial setup and listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('lang-switch').addEventListener('click', switchLanguage);
+            document.getElementById('demo-form').addEventListener('submit', handleDemoSubmission);
+            
+            // Set up VSME buttons (must be done after DOM load)
+            document.getElementById('nextBtn').onclick = () => showStepIndex(currentStep + 1);
+            document.getElementById('prevBtn').onclick = () => showStepIndex(currentStep - 1);
+            document.getElementById('generateBtn').onclick = generateReport;
+
+            // Set initial content
+            updateContent();
+            checkScreening(); // Initialize screening check
+        });
+    </script>
+
+
+    <!-- ========================================== -->
+    <!-- LANDING PAGE CONTAINER -->
+    <!-- ========================================== -->
+    <div id="landing-page">
+        <!-- Header / Navigation -->
+        <header class="bg-white shadow-md sticky top-0 z-10 no-print">
+            <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-leaf"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.2 7.7 16.5 12.3 17.8 15.6a2 2 0 0 0 2 1.5c.3 0 .7-.2 1-.5-.4-.5-.4-1.2-.5-1.7-.6-1.4-1.4-3.5-3.6-6.4A4.3 4.3 0 0 0 12 2c-3.1 0-7 3.5-7 10 0 4.4 3 8 7 8Z"/><path d="M12 22a7 7 0 0 0 5-2.2c-2.3-2.6-3.7-6.2-3.7-9.8 0-2.3.9-4.5 2.4-6.2-3.4 1-6.6 4.4-7.4 8.7a9 9 0 0 0 2.8 11.7"/></svg>
+                    <h1 class="text-2xl font-bold text-demandio-blue">Demandio.cloud</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="hidden md:flex space-x-6 text-gray-600 font-medium">
+                        <a href="#home" class="hover:text-demandio-light transition duration-150" data-lang-key="navHome">Home</a>
+                        <a href="#problem" class="hover:text-demandio-light transition duration-150" data-lang-key="navProblem">Problem</a>
+                        <a href="#solution" class="hover:text-demandio-light transition duration-150" data-lang-key="navSolution">Solution</a>
+                        <a href="#features" class="hover:text-demandio-light transition duration-150" data-lang-key="navFeatures">Features</a>
+                        <a href="#demo" class="hover:text-demandio-light transition duration-150" data-lang-key="navDemo">Demo</a>
+                        <a href="#contact" class="hover:text-demandio-light transition duration-150" data-lang-key="navContact">Contact</a>
+                    </div>
+                    <button id="lang-switch" class="px-3 py-1 text-sm font-semibold rounded-full bg-demandio-light text-white hover:bg-demandio-blue transition duration-150">NL</button>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Hero Section -->
+        <section id="home" class="hero-bg py-20 md:py-32 text-center text-white relative overflow-hidden">
+            <div class="absolute inset-0 bg-demandio-blue opacity-80"></div>
+            <div class="relative max-w-4xl mx-auto px-4 z-10">
+                <span class="inline-block bg-demandio-green text-white text-xs font-semibold px-3 py-1 rounded-full uppercase mb-4">ESG Compliance Made Simple</span>
+                <h2 class="text-4xl sm:text-6xl font-extrabold mb-4 leading-tight" data-lang-key="heroTitle">The AI ESG Copilot for Automotive SMEs</h2>
+                <p class="text-lg sm:text-xl mb-8 font-light" data-lang-key="heroSubtitle">Streamline CSRD, Scope 3, and Circularity Compliance for Garages & Distributors in the EU.</p>
+                <a href="#demo" class="inline-block px-10 py-4 bg-demandio-green text-white text-lg font-bold rounded-xl shadow-lg hover:bg-green-700 transition duration-300 transform hover:scale-105" data-lang-key="heroButton">Request a Demo</a>
+            </div>
+        </section>
+
+        <!-- Problem Section -->
+        <section id="problem" class="py-16 md:py-24 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h3 class="text-4xl font-bold text-center text-gray-800 mb-12 section-header" data-lang-key="sectionProblem">The Challenge for SMEs</h3>
+                <p class="max-w-3xl mx-auto text-center text-gray-600 mb-12 text-lg" data-lang-key="problemText">Small and mid-sized automotive businesses in Europe face growing ESG pressure (CSRD, CBAM, Battery Passport) but lack the time, tools, and expertise to comply. Over 70% are unprepared, relying on manual spreadsheets.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <!-- Barrier 1 -->
+                    <div class="bg-red-50 p-6 rounded-xl shadow-lg text-center border-t-4 border-red-500 transform hover:scale-[1.02] transition duration-300">
+                        <i data-lucide="clock" class="w-10 h-10 text-red-500 mx-auto mb-4"></i>
+                        <h4 class="text-xl font-semibold text-gray-800 mb-2" data-lang-key="barrier1">Lack of Time & Resources</h4>
+                        <p class="text-gray-500 text-sm">37% of SMEs cite this as the main barrier.</p>
+                    </div>
+                    <!-- Barrier 2 -->
+                    <div class="bg-yellow-50 p-6 rounded-xl shadow-lg text-center border-t-4 border-yellow-500 transform hover:scale-[1.02] transition duration-300">
+                        <i data-lucide="help-circle" class="w-10 h-10 text-yellow-500 mx-auto mb-4"></i>
+                        <h4 class="text-xl font-semibold text-gray-800 mb-2" data-lang-key="barrier2">Confusing ESG Frameworks</h4>
+                        <p class="text-gray-500 text-sm">Overwhelmed by CSRD, Scope 3, etc. (27%).</p>
+                    </div>
+                    <!-- Barrier 3 -->
+                    <div class="bg-indigo-50 p-6 rounded-xl shadow-lg text-center border-t-4 border-indigo-500 transform hover:scale-[1.02] transition duration-300">
+                        <i data-lucide="user-x" class="w-10 h-10 text-indigo-500 mx-auto mb-4"></i>
+                        <h4 class="text-xl font-semibold text-gray-800 mb-2" data-lang-key="barrier3">No Internal Expertise</h4>
+                        <p class="text-gray-500 text-sm">Hiring consultants is too costly (21%).</p>
+                    </div>
+                    <!-- Barrier 4 -->
+                    <div class="bg-green-50 p-6 rounded-xl shadow-lg text-center border-t-4 border-green-500 transform hover:scale-[1.02] transition duration-300">
+                        <i data-lucide="handshake" class="w-10 h-10 text-green-500 mx-auto mb-4"></i>
+                        <h4 class="text-xl font-semibold text-gray-800 mb-2" data-lang-key="barrier4">Increasing OEM Pressure</h4>
+                        <p class="text-gray-500 text-sm">Large buyers demand Scope 3 data (20%).</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Solution Section -->
+        <section id="solution" class="py-16 md:py-24 bg-demandio-blue text-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h3 class="text-4xl font-bold text-center mb-12 section-header after:bg-demandio-green after:mx-auto" data-lang-key="sectionSolution">Demandio: The Simple Solution</h3>
+                <p class="max-w-4xl mx-auto text-center text-gray-200 mb-16 text-lg" data-lang-key="solutionText">Demandio is an AI-powered ESG and circularity platform built specifically for the automotive aftermarket. It turns complex regulations into simple, profitable actions, enabling compliance and green growth.</p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <!-- Visual/Diagram (Simplified Theory of Change) -->
+                    <div class="p-8 bg-white rounded-xl shadow-2xl">
+                        <h4 class="text-2xl font-bold text-gray-800 mb-6">Theory of Change in Action</h4>
+                        <!-- Diagram Step 1: Input -->
+                        <div class="flex items-center space-x-4 mb-4">
+                            <div class="w-10 h-10 bg-demandio-light text-white rounded-full flex items-center justify-center font-bold">1</div>
+                            <div>
+                                <p class="font-semibold text-gray-700">IF: Garages & Distributors use Demandio...</p>
+                                <p class="text-sm text-gray-500">...With AI Copilot and Invoice OCR</p>
+                            </div>
+                        </div>
+                        <div class="h-8 w-px bg-gray-300 ml-5"></div>
+                        <!-- Diagram Step 2: Output -->
+                        <div class="flex items-center space-x-4 mb-4">
+                            <div class="w-10 h-10 bg-demandio-yellow text-white rounded-full flex items-center justify-center font-bold">2</div>
+                            <div>
+                                <p class="font-semibold text-gray-700">THEN: They achieve Compliance...</p>
+                                <p class="text-sm text-gray-500">...CSRD-Lite Reports & Subsidy Eligibility</p>
+                            </div>
+                        </div>
+                        <div class="h-8 w-px bg-gray-300 ml-5"></div>
+                        <!-- Diagram Step 3: Ultimate Outcome -->
+                        <div class="flex items-center space-x-4">
+                            <div class="w-10 h-10 bg-demandio-green text-white rounded-full flex items-center justify-center font-bold">3</div>
+                            <div>
+                                <p class="font-semibold text-gray-700">ULTIMATELY: Unlock Green Growth</p>
+                                <p class="text-sm text-gray-500">...Avoid penalties, win OEM contracts, secure capital</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Key Benefits -->
+                    <div class="space-y-6">
+                        <div class="flex items-start space-x-4 bg-white/10 p-6 rounded-xl hover:bg-white/20 transition duration-300">
+                            <i data-lucide="zap" class="w-8 h-8 text-demandio-green flex-shrink-0 mt-1"></i>
+                            <div>
+                                <h4 class="text-xl font-semibold mb-1">Cost-Effective Compliance</h4>
+                                <p class="text-gray-200">3-5x more cost-effective than hiring external ESG consultants, reducing manual effort by up to 50%.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4 bg-white/10 p-6 rounded-xl hover:bg-white/20 transition duration-300">
+                            <i data-lucide="globe-lock" class="w-8 h-8 text-demandio-green flex-shrink-0 mt-1"></i>
+                            <div>
+                                <h4 class="text-xl font-semibold mb-1">Win Corporate Business</h4>
+                                <p class="text-gray-200">Become a preferred partner for large corporations (79% screen suppliers on sustainability).</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4 bg-white/10 p-6 rounded-xl hover:bg-white/20 transition duration-300">
+                            <i data-lucide="euro" class="w-8 h-8 text-demandio-green flex-shrink-0 mt-1"></i>
+                            <div>
+                                <h4 class="text-xl font-semibold mb-1">Access Green Capital</h4>
+                                <p class="text-gray-200">Automatically qualify for and generate applications for valuable EU and Dutch green subsidies.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section (The four core pillars) -->
+        <section id="features" class="py-16 md:py-24 bg-gray-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h3 class="text-4xl font-bold text-center text-gray-800 mb-12 section-header" data-lang-key="sectionFeatures">Core Features That Drive Compliance</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <!-- Feature 1: AI ESG Copilot -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-b-4 border-demandio-light hover:shadow-xl transition duration-300">
+                        <div class="bg-demandio-light/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                            <i data-lucide="bot" class="w-6 h-6 text-demandio-light"></i>
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2" data-lang-key="feature1Title">AI ESG Copilot</h4>
+                        <p class="text-gray-600" data-lang-key="feature1Desc">Step-by-step guidance using plain, garage-specific language, not ESG jargon. Perfect for non-experts.</p>
+                    </div>
+
+                    <!-- Feature 2: Part-Level CO₂ Tracker -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-b-4 border-demandio-green hover:shadow-xl transition duration-300">
+                        <div class="bg-demandio-green/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                            <i data-lucide="gauge" class="w-6 h-6 text-demandio-green"></i>
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2" data-lang-key="feature2Title">Part-Level CO₂ Tracker</h4>
+                        <p class="text-gray-600" data-lang-key="feature2Desc">Calculate precise Scope 3 emissions for every part and repair job using proprietary SKU-to-CO₂ data.</p>
+                    </div>
+
+                    <!-- Feature 3: One-Click ESG Kit (CSRD-Lite) -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-b-4 border-demandio-yellow hover:shadow-xl transition duration-300">
+                        <div class="bg-demandio-yellow/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                            <i data-lucide="file-text" class="w-6 h-6 text-demandio-yellow"></i>
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2" data-lang-key="feature3Title">One-Click ESG Kit (CSRD-Lite)</h4>
+                        <p class="text-gray-600" data-lang-key="feature3Desc">Auto-generate buyer-ready, audit-ready compliance reports, including Scope 1-3 carbon footprint and circularity metrics.</p>
+                    </div>
+
+                    <!-- Feature 4: EU Subsidy Finder -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-b-4 border-purple-500 hover:shadow-xl transition duration-300">
+                        <div class="bg-purple-500/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                            <i data-lucide="piggy-bank" class="w-6 h-6 text-purple-500"></i>
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2" data-lang-key="feature4Title">EU Subsidy Finder</h4>
+                        <p class="text-gray-600" data-lang-key="feature4Desc">Automatically match your business with relevant EU/National green grants and subsidies, and generate application forms.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trust Factors & Positioning -->
+        <section class="py-16 bg-demandio-blue">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h3 class="text-3xl font-bold text-center text-white mb-12" data-lang-key="trustSection">Why Trust Demandio?</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center text-white">
+                    <div class="p-6 bg-white/10 rounded-xl">
+                        <i data-lucide="gavel" class="w-10 h-10 text-demandio-green mx-auto mb-4"></i>
+                        <h4 class="text-xl font-semibold mb-2" data-lang-key="trust1Title">Built for EU Regulations</h4>
+                        <p class="text-gray-300" data-lang-key="trust1Desc">Fully aligned with CSRD, CBAM, and EU Green Deal requirements, reducing your risk of penalties.</p>
+                    </div>
+                    <div class="p-6 bg-white/10 rounded-xl">
+                        <i data-lucide="scan-line" class="w-10 h-10 text-demandio-green mx-auto mb-4"></i>
+                        <h4 class="text-xl font-semibold mb-2" data-lang-key="trust2Title">Automotive Vertical SaaS</h4>
+                        <p class="text-gray-300" data-lang-key="trust2Desc">Deeply embedded in garage/distributor workflows (Invoice OCR, SKU data) unlike generic ESG tools.</p>
+                    </div>
+                    <div class="p-6 bg-white/10 rounded-xl">
+                        <i data-lucide="flag" class="w-10 h-10 text-demandio-green mx-auto mb-4"></i>
+                        <h4 class="text-xl font-semibold mb-2" data-lang-key="trust3Title">Dutch/EU Launchpad</h4>
+                        <p class="text-gray-300" data-lang-key="trust3Desc">Headquartered in the Netherlands, the ideal ecosystem for rapid ESG and circular economy growth.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Demo Request Section -->
+        <section id="demo" class="py-16 md:py-24 bg-gray-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h3 class="text-4xl font-bold text-center text-gray-800 mb-12 section-header" data-lang-key="sectionDemo">See Demandio in Action</h3>
+                <div class="max-w-3xl mx-auto bg-white p-8 md:p-12 rounded-xl shadow-2xl border-t-8 border-demandio-green">
+                    <p class="text-center text-lg text-gray-600 mb-8" data-lang-key="demoText">Discover how Demandio's AI Copilot can simplify your ESG compliance and unlock green funding opportunities. Book a free, personalized demonstration tailored to your garage or distribution business.</p>
+                    <form id="demo-form" class="space-y-4">
+                        <input type="text" placeholder="Your Name / Contact Person (Naam)" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-demandio-green focus:border-demandio-green" required>
+                        <input type="email" placeholder="Business Email (Zakelijk E-mailadres)" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-demandio-green focus:border-demandio-green" required>
+                        <input type="text" placeholder="Company Name (Bedrijfsnaam)" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-demandio-green focus:border-demandio-green" required>
+                        <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-demandio-green focus:border-demandio-green" required>
+                            <option value="">Select Business Type (Kies Bedrijfstype)</option>
+                            <option value="garage">Garage / Repair Shop</option>
+                            <option value="distributor">Parts Distributor / Supplier</option>
+                        </select>
+                        <button type="submit" id="book-demo-btn" class="w-full py-3 bg-demandio-green text-white font-bold text-lg rounded-lg hover:bg-green-700 transition duration-300 transform hover:scale-[1.01]" data-lang-key="demoButton">Book Your Demo</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer / Contact Information -->
+        <footer id="contact" class="bg-gray-800 text-white py-12">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8 border-b border-gray-700 pb-8 mb-8">
+                    <!-- Logo and Slogan -->
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="leaf" class="w-6 h-6 text-demandio-green"></i>
+                            <h5 class="text-2xl font-bold">Demandio.cloud</h5>
+                        </div>
+                        <p class="text-sm text-gray-400">Drive Sustainability with Demandio.</p>
+                    </div>
+
+                    <!-- Quick Links -->
+                    <div>
+                        <h5 class="text-lg font-semibold mb-4">Quick Links</h5>
+                        <ul class="space-y-2 text-sm text-gray-400">
+                            <li><a href="#problem" class="hover:text-demandio-green" data-lang-key="navProblem">Problem</a></li>
+                            <li><a href="#solution" class="hover:text-demandio-green" data-lang-key="navSolution">Solution</a></li>
+                            <li><a href="#features" class="hover:text-demandio-green" data-lang-key="navFeatures">Features</a></li>
+                            <li><a href="#demo" class="hover:text-demandio-green" data-lang-key="navDemo">Demo</a></li>
+                            <li><a href="#contact" class="hover:text-demandio-green" data-lang-key="navContact">Contact</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Contact Info (EU/Global Standard) -->
+                    <div>
+                        <h5 class="text-lg font-semibold mb-4" data-lang-key="footerContact">Contact Information</h5>
+                        <ul class="space-y-2 text-sm text-gray-400">
+                            <li class="flex items-center"><i data-lucide="mail" class="w-4 h-4 mr-2"></i> <span data-lang-key="footerEmail">Email: mike@demandio.cloud</span></li>
+                            <li class="flex items-center"><i data-lucide="phone" class="w-4 h-4 mr-2"></i> <span data-lang-key="footerPhone">Phone: +31 6 1234 5678 (EU Office Mock)</span></li>
+                            <li class="flex items-center"><i data-lucide="map-pin" class="w-4 h-4 mr-2"></i> <span data-lang-key="footerAddress">HQ: Amsterdam, The Netherlands</span></li>
+                        </ul>
+                    </div>
+
+                    <!-- Compliance / Social (Trust Factor) -->
+                    <div>
+                        <h5 class="text-lg font-semibold mb-4">Compliance & Trust</h5>
+                        <ul class="space-y-2 text-sm text-gray-400">
+                            <li class="flex items-center"><i data-lucide="check-square" class="w-4 h-4 mr-2"></i> CSRD Ready Platform</li>
+                            <li class="flex items-center"><i data-lucide="european-union" class="w-4 h-4 mr-2"></i> EU & Dutch Subsidy Alignment</li>
+                            <li class="flex items-center space-x-4 mt-4">
+                                <!-- Social Icons -->
+                                <a href="#" class="hover:text-demandio-green transition duration-150"><i data-lucide="linkedin" class="w-5 h-5"></i></a>
+                                <a href="#" class="hover:text-demandio-green transition duration-150"><i data-lucide="twitter" class="w-5 h-5"></i></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Copyright and Legal -->
+                <div class="text-center text-sm text-gray-500">
+                    <p data-lang-key="footerLegal">© 2025 Demandio. All rights reserved. | Privacy Policy | Terms of Service</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Loading and Confirmation Overlay -->
+    <div id="confirmation-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-90 z-50 hidden flex items-center justify-center">
+        <!-- Loading Spinner -->
+        <div id="loading-spinner" class="text-white text-center p-8 rounded-xl fade-in">
+            <!-- Tailwind CSS Spinner SVG -->
+            <svg class="animate-spin h-10 w-10 text-demandio-green mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p id="loading-text-status" class="text-xl font-semibold mt-4" data-lang-key="loadingText">Processing Request...</p>
+        </div>
+
+        <!-- Confirmation Message (Initially hidden) -->
+        <div id="confirmation-message" class="bg-white p-8 sm:p-12 rounded-xl shadow-2xl max-w-lg w-full text-center hidden fade-in">
+            <i data-lucide="check-circle" class="w-16 h-16 text-demandio-green mx-auto mb-6"></i>
+            <h2 id="confirm-title" class="text-3xl font-bold text-gray-800 mb-3" data-lang-key="confirmTitle">Demo Successfully Booked!</h2>
+            <p id="confirm-body" class="text-gray-600 mb-6" data-lang-key="redirectText">Success! Your personalized request has been submitted. You will be automatically redirected to the Live Demo environment in a moment.</p>
+
+            <button id="confirm-close-btn" class="px-8 py-3 bg-demandio-blue text-white font-semibold rounded-lg hover:bg-demandio-light transition" data-lang-key="confirmClose">Start Demo</button>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- DEMO APP (VSME REPORT GENERATOR) CONTENT -->
+    <!-- ========================================== -->
+    
+    <!-- MODULE 1: SCREENING & WELCOME -->
+    <div id="screening-section" class="max-w-full sm:max-w-2xl mx-auto mt-10 p-4 sm:p-6 no-print hidden">
+        <div class="bg-white rounded-xl shadow-xl p-4 sm:p-8 border-t-4 border-blue-600">
+            <h1 class="text-3xl font-bold text-gray-800 mb-4">VSME Wizard Setup</h1>
+            <p class="text-gray-600 mb-8">Welcome to the Live Demo. Before we begin, we need to determine which reporting modules are relevant for your organization (Non-Listed SME focus).</p>
+
+            <form id="screening-form" class="space-y-6">
+
+                <!-- Q1: Listed Status -->
+                <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <label class="block font-bold text-gray-800 mb-2">1. Is your company (or parent) listed on an EU regulated market?</label>
+                    <div class="flex gap-4">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="radio" name="isListed" value="yes" class="form-radio text-blue-600" onchange="checkScreening()">
+                            <span>Yes (Listed)</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="radio" name="isListed" value="no" class="form-radio text-blue-600" checked onchange="checkScreening()">
+                            <span>No (Non-Listed SME)</span>
+                        </label>
+                    </div>
+                    <div id="listed-warning" class="hidden mt-3 text-red-600 text-sm font-bold bg-red-50 p-2 rounded">
+                        ⛔ Stop: You fall under the mandatory ESRS LSME standard. This VSME tool is not sufficient for your compliance needs.
+                    </div>
+                </div>
+
+                <!-- Q2: Purpose & Modules -->
+                <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <label class="block font-bold text-gray-800 mb-2">2. What is the primary purpose of this report?</label>
+                    <select id="reportPurpose" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500" onchange="checkScreening()">
+                        <option value="basic">Internal Transparency / Just Starting (Basic Module Only)</option>
+                        <option value="partner">Request from Business Partner / Bank (Basic + BP Module)</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-2">Selecting "Business Partner" adds the Enhanced P1/P2 Value Chain module required by banks and large partners.</p>
+                </div>
+
+                <!-- Q3: Policies (Narrative) -->
+                <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <label class="block font-bold text-gray-800 mb-2">3. Do you have formal sustainability policies & targets?</label>
+                    <div class="flex gap-4">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="radio" name="hasPolicies" value="no" class="form-radio text-blue-600">
+                            <span>No / Not yet (Basic)</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="radio" name="hasPolicies" value="yes" class="form-radio text-blue-600" checked>
+                            <span>Yes (Option B: Comprehensive)</span>
+                        </label>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Selecting "Yes" will enable the Comprehensive Module (C1-C9) for advanced strategy and governance reporting.</p>
+                </div>
+            </form>
+
+            <!-- FIXED START BUTTON -->
+            <div class="fixed bottom-0 left-0 right-0 z-10 p-4 bg-gray-50 border-t shadow-lg sm:static sm:p-0 sm:border-t-0 sm:shadow-none sm:mt-6">
+                <button type="button" id="startBtn" onclick="startApp()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow hover:bg-blue-700 transition transform hover:-translate-y-1 sm:hover:translate-y-0">
+                    Start Report Generation &rarr;
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MODULE 2: MAIN APP CONTAINER -->
+    <div id="app-container" class="max-w-full sm:max-w-5xl mx-auto p-4 sm:p-6 no-print hidden">
+
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6 border-t-4 border-blue-600 flex justify-between items-center">
+            <div>
+                <h1 class="text-xl sm:text-2xl font-bold text-gray-800">VSME Report Generator</h1>
+                <p class="text-gray-500 text-xs sm:text-sm mt-1" id="config-summary">Basic Module</p>
+            </div>
+            <div class="text-right hidden sm:block">
+                <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">Automotive Aftermarket Edition</span>
+            </div>
+        </div>
+
+        <!-- Progress Bar (Dynamic) -->
+        <div class="flex justify-between mb-8 px-0 sm:px-8 relative overflow-x-auto" id="progress-bar-container">
+            <!-- Injected via JS based on steps -->
+        </div>
+
+        <!-- Form Container -->
+        <form id="vsme-form" class="bg-white rounded-lg shadow-lg overflow-hidden">
+
+            <!-- STEP 1: General (B1-B2) -->
+            <div id="step-1" class="step-content p-4 sm:p-8">
+                <div class="flex justify-between items-center border-b pb-4 mb-6">
+                    <h2 class="text-lg sm:text-xl font-bold text-gray-800">Step 1: Basic General & Strategy</h2>
+                    <button type="button" onclick="fillFakeData(1)" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200">🪄 Auto Fill</button>
+                </div>
+                <!-- B1 -->
+                <h3 class="font-bold text-blue-700 mb-4 bg-blue-50 p-2 rounded">B1 - Basis for Preparation</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Legal Company Name</label>
+                        <input type="text" id="b1_name" class="w-full border p-2 rounded" placeholder="e.g. AutoParts NL B.V." required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Module Option</label>
+                        <input type="text" id="b1_option" class="w-full border p-2 rounded bg-gray-100" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Basis of Report</label>
+                        <select id="b1_basis" class="w-full border p-2 rounded">
+                            <option value="Individual basis">Individual basis (Single Entity)</option>
+                            <option value="Consolidated basis">Consolidated basis (Group)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Legal Form</label>
+                        <input type="text" id="b1_legal_form" class="w-full border p-2 rounded" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">NACE Sector</label>
+                        <input type="text" id="b1_nace" class="w-full border p-2 rounded" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Country of Operations</label>
+                        <input type="text" id="b1_country" class="w-full border p-2 rounded" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Net Turnover (€)</label>
+                        <input type="text" id="b1_turnover" class="w-full border p-2 rounded" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Employees (Headcount)</label>
+                        <input type="number" id="b1_employees" class="w-full border p-2 rounded" required>
+                    </div>
+                </div>
+                <!-- B2 -->
+                <h3 class="font-bold text-blue-700 mb-4 bg-blue-50 p-2 rounded">B2 - Sustainability Strategy</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Transition Plan & Practices</label>
+                        <textarea id="b2_practices" class="w-full border p-2 rounded h-20 text-sm" placeholder="e.g. Switching to LED lights..." required></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 2: Environment (B3-B7) -->
+            <div id="step-2" class="step-content p-4 sm:p-8">
+                <div class="flex justify-between items-center border-b pb-4 mb-6">
+                    <h2 class="text-lg sm:text-xl font-bold text-gray-800">Step 2: Environment (B3-B7)</h2>
+                    <button type="button" onclick="fillFakeData(2)" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200">🪄 Auto Fill</button>
+                </div>
+                <h3 class="font-bold text-green-700 mb-4 bg-green-50 p-2 rounded">Energy & GHG (B3)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div><label class="block text-sm font-bold mb-1">Total Energy (MWh)</label><input type="number" id="b3_energy_total" class="w-full border p-2 rounded" required></div>
+                    <div><label class="block text-sm font-bold mb-1">Renewable (MWh)</label><input type="number" id="b3_energy_ren" class="w-full border p-2 rounded" required></div>
+                    <div><label class="block text-sm font-bold mb-1">Fossil (MWh)</label><input type="number" id="b3_energy_nonren" class="w-full border p-2 rounded" required></div>
+                    <div><label class="block text-sm font-bold mb-1">Scope 1 (tCO2e)</label><input type="number" id="b3_scope1" class="w-full border p-2 rounded" required></div>
+                    <div><label class="block text-sm font-bold mb-1">Scope 2 (tCO2e)</label><input type="number" id="b3_scope2" class="w-full border p-2 rounded" required></div>
+                </div>
+                <h3 class="font-bold text-green-700 mb-4 bg-green-50 p-2 rounded">Pollution & Resources (B4-B7)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div><label class="block text-sm font-bold mb-1">Pollutants</label><input type="text" id="b4_pollution" class="w-full border p-2 rounded" required></div>
+                    <div><label class="block text-sm font-bold mb-1">Sensitive Sites</label><input type="text" id="b5_sensitive" class="w-full border p-2 rounded" required></div>
+                    <div><label class="block text-sm font-bold mb-1">Water (m3)</label><input type="number" id="b6_water" class="w-full border p-2 rounded" required></div>
+                    <div><label class="block text-sm font-bold mb-1">Haz. Waste (T)</label><input type="number" id="b7_waste_haz" class="w-full border p-2 rounded" required></div>
+                    <div><label class="block text-sm font-bold mb-1">Recycled (T)</label><input type="number" id="b7_waste_recycled" class="w-full border p-2 rounded" required></div>
+                </div>
+            </div>
+
+            <!-- STEP 3: Social (B8-B10) -->
+            <div id="step-3" class="step-content p-4 sm:p-8">
+                <div class="flex justify-between items-center border-b pb-4 mb-6">
+                    <h2 class="text-lg sm:text-xl font-bold text-gray-800">Step 3: Social (B8-B10)</h2>
+                    <button type="button" onclick="fillFakeData(3)" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200">🪄 Auto Fill</button>
+                </div>
+                <h3 class="font-bold text-purple-700 mb-4 bg-purple-50 p-2 rounded">Workforce & Safety</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div><label class="block text-sm font-bold mb-1">Perm. Employees</label><input type="number" id="b8_perm" class="w-full border p-2 rounded" required></div>
+                    <div><label class="block text-sm font-bold mb-1">Temp. Employees</label><input type="number" id="b8_temp" class="w-full border p-2 rounded" required></div>
+                    <div><label class="block text-sm font-bold mb-1">Female Count</label><input type="number" id="b8_female" class="w-full border p-2 rounded" required></div>
+                    <div><label class="block text-sm font-bold mb-1">Accidents</label><input type="number" id="b9_accidents" class="w-full border p-2 rounded" required></div>
+                    <div><label class="block text-sm font-bold mb-1">Min Wage</label><select id="b10_minwage" class="w-full border p-2 rounded"><option value="Yes">Yes</option><option value="No">No</option></select></div>
+                </div>
+            </div>
+
+            <!-- STEP 4: Governance (Basic) -->
+            <div id="step-gov" class="step-content p-4 sm:p-8">
+                <div class="flex justify-between items-center border-b pb-4 mb-6">
+                    <h2 class="text-lg sm:text-xl font-bold text-gray-800">Step 4: Governance (B11)</h2>
+                    <button type="button" onclick="fillFakeData(4)" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200">🪄 Auto Fill</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div><label class="block text-sm font-bold mb-1">Convictions</label><input type="number" id="b11_convictions" class="w-full border p-2 rounded" required></div>
+                    <div><label class="block text-sm font-bold mb-1">Fines (€)</label><input type="number" id="b11_fines" class="w-full border p-2 rounded" required></div>
+                </div>
+            </div>
+
+            <!-- STEP BP: Business Partners (Optional) - ENHANCED -->
+            <div id="step-bp" class="step-content p-4 sm:p-8">
+                <div class="flex justify-between items-center border-b pb-4 mb-6">
+                    <h2 class="text-lg sm:text-xl font-bold text-indigo-800">Business Partners Module (P1-P2)</h2>
+                    <button type="button" onclick="fillFakeData('bp')" class="text-sm bg-indigo-100 text-indigo-700 px-3 py-1 rounded hover:bg-indigo-200">🪄 Auto Fill</button>
+                </div>
+
+                <!-- P1: Supply Chain & Human Rights -->
+                <h3 class="font-bold text-indigo-700 mb-4 bg-indigo-50 p-2 rounded">P1 - Supply Chain & Workers (LkSG/Human Rights Alignment)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Supplier Code of Conduct</label>
+                        <select id="bp_code" class="w-full border p-2 rounded">
+                            <option value="Yes (covers human rights/environment)">Yes (covers human rights/environment)</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Supplier Grievance Mechanism</label>
+                        <select id="bp_grievance" class="w-full border p-2 rounded">
+                            <option value="Yes (accessible mechanism exists)">Yes (accessible mechanism exists)</option>
+                            <option value="No">No</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Mechanism for supply chain workers to report issues (e.g., LkSG compliance).</p>
+                    </div>
+                    <div class="col-span-1 md:col-span-2">
+                        <label class="block text-sm font-bold mb-1">Payment Practices (Avg. Days)</label>
+                        <input type="text" id="bp_payment" class="w-full border p-2 rounded" placeholder="e.g. 30 days" required>
+                    </div>
+                </div>
+
+                <!-- P2: Climate & Finance Relevance -->
+                <h3 class="font-bold text-indigo-700 mb-4 bg-indigo-50 p-2 rounded">P2 - Climate & Financial Alignment (SFDR/Bank Relevance)</h3>
+                <div class="space-y-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Revenue from Excluded Sectors (Fossil Fuels, Weapons, Tobacco)</label>
+                        <input type="text" id="bp_excluded_rev" class="w-full border p-2 rounded" placeholder="e.g. 0% or €10,000" required>
+                        <p class="text-xs text-gray-500 mt-1">Required by financial institutions for SFDR/PAI screening.</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Scope 3 GHG Calculation Status</label>
+                        <select id="bp_scope3_status" class="w-full border p-2 rounded">
+                            <option value="Not Measured">Not Measured</option>
+                            <option value="Estimated">Estimated (Focus on purchased goods/transport)</option>
+                            <option value="Calculated">Calculated (Using GHG Protocol or similar)</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Crucial indicator for downstream partners' Scope 3.</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Identified Climate Risks (Physical or Transition)</label>
+                        <textarea id="bp_climate_risks" class="w-full border p-2 rounded h-16 text-sm" placeholder="e.g. Physical: Increased cooling costs (High). Transition: Dependence on ICE parts (Medium)." required></textarea>
+                        <p class="text-xs text-gray-500 mt-1">Identify risks relevant to your operations/products.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP C-1: Comp General & Env -->
+            <div id="step-c1" class="step-content p-4 sm:p-8">
+                <div class="flex justify-between items-center border-b pb-4 mb-6">
+                    <h2 class="text-lg sm:text-xl font-bold text-teal-800">Comprehensive: Strategy & Environment (C1-C4)</h2>
+                    <button type="button" onclick="fillFakeData('c1')" class="text-sm bg-teal-100 text-teal-700 px-3 py-1 rounded hover:bg-teal-200">🪄 Auto Fill</button>
+                </div>
+
+                <!-- C1 & C2 -->
+                <h3 class="font-bold text-teal-700 mb-4 bg-teal-50 p-2 rounded">C1/C2 - Strategy & Policies</h3>
+                <div class="space-y-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-bold mb-1">C1 - Business Model & Strategy</label>
+                        <textarea id="c1_strategy" class="w-full border p-2 rounded h-20 text-sm" placeholder="Describe products, markets, and key relationships..." required></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">C2 - Policy Description & Accountability</label>
+                        <textarea id="c2_policies" class="w-full border p-2 rounded h-20 text-sm" placeholder="Who is accountable? Describe the policies reported in B2..." required></textarea>
+                    </div>
+                </div>
+
+                <!-- C3 & C4 -->
+                <h3 class="font-bold text-teal-700 mb-4 bg-teal-50 p-2 rounded">C3/C4 - Targets & Climate Risks</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-bold mb-1">C3 - GHG Targets</label>
+                        <textarea id="c3_targets" class="w-full border p-2 rounded h-24 text-sm" placeholder="e.g. Scope 1: -50% by 2030 (Base 2022). Scope 3: ..." required></textarea>
+                        <p class="text-xs text-gray-500">Include Base Year, Target Year, and Absolute Values.</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">C4 - Climate Risks & Adaptation</label>
+                        <textarea id="c4_risks" class="w-full border p-2 rounded h-24 text-sm" placeholder="e.g. Flood risk at HQ. Adaptation: Flood barriers installed." required></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP C-2: Comp Social & Gov -->
+            <div id="step-c2" class="step-content p-4 sm:p-8">
+                <div class="flex justify-between items-center border-b pb-4 mb-6">
+                    <h2 class="text-lg sm:text-xl font-bold text-teal-800">Comprehensive: Social & Governance (C5-C9)</h2>
+                    <button type="button" onclick="fillFakeData('c2')" class="text-sm bg-teal-100 text-teal-700 px-3 py-1 rounded hover:bg-teal-200">🪄 Auto Fill</button>
+                </div>
+
+                <!-- C5 - C7 -->
+                <h3 class="font-bold text-teal-700 mb-4 bg-teal-50 p-2 rounded">C5-C7 - Workforce & Human Rights</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-sm font-bold mb-1">C5 - Management Gender Ratio</label>
+                        <input type="text" id="c5_mgmt_gender" class="w-full border p-2 rounded" placeholder="e.g. 40% Female" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">C6 - Human Rights Policy?</label>
+                        <select id="c6_policy" class="w-full border p-2 rounded"><option value="Yes">Yes (Child/Forced Labor, etc.)</option><option value="No">No</option></select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">C7 - Human Rights Incidents</label>
+                        <select id="c7_incidents" class="w-full border p-2 rounded"><option value="None">No confirmed incidents</option><option value="Yes">Yes (See description)</option></select>
+                    </div>
+                </div>
+
+                <!-- C8 - C9 -->
+                <h3 class="font-bold text-teal-700 mb-4 bg-teal-50 p-2 rounded">C8/C9 - Governance</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-bold mb-1">C8 - Excluded Sectors Revenue</label>
+                        <input type="text" id="c8_revenue" class="w-full border p-2 rounded" placeholder="e.g. 0% from weapons/tobacco/coal" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">C9 - Board Gender Diversity</label>
+                        <input type="text" id="c9_board_gender" class="w-full border p-2 rounded" placeholder="e.g. 1 Female / 4 Male" required>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- FINAL STEP -->
+            <div id="step-generate" class="step-content p-4 sm:p-8">
+                <div class="bg-blue-50 p-8 rounded text-center border border-blue-100">
+                    <h2 class="text-2xl font-bold text-blue-900 mb-4">All Data Collected</h2>
+                    <p class="text-blue-700 mb-8">You have completed all required modules based on your selection. Click below to generate your audit-ready report.</p>
+                    <button type="button" id="generateBtn" class="bg-green-600 text-white text-xl font-bold px-10 py-4 rounded shadow-lg hover:bg-green-700 transform transition hover:scale-105">Generate Official Report</button>
+                </div>
+            </div>
+
+            <!-- Footer Nav (Fixed to bottom) -->
+            <div class="fixed bottom-0 left-0 right-0 z-10 bg-gray-50 px-8 py-4 flex justify-between border-t shadow-lg no-print">
+                <button type="button" id="prevBtn" class="bg-gray-300 text-gray-700 px-6 py-2 rounded font-semibold hidden hover:bg-gray-400 transition">Back</button>
+                <button type="button" id="nextBtn" class="bg-blue-600 text-white px-8 py-2 rounded font-semibold ml-auto hover:bg-blue-700 transition">Next Step</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- REPORT OUTPUT -->
+    <div id="report-output" class="hidden report-container bg-white p-4 sm:p-10 shadow-2xl my-4 sm:my-10">
+        <!-- Toolbar -->
+        <div class="no-print flex justify-between items-center mb-8 border-b pb-4 bg-gray-50 p-4 rounded">
+            <span class="font-bold text-green-700">✓ Report Generated</span>
+            <div>
+                <button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded font-bold text-sm">Print / PDF</button>
+                <button onclick="location.reload()" class="bg-gray-200 text-gray-700 px-4 py-2 rounded font-bold text-sm ml-2">Reset</button>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div style="border-bottom:3px solid #005691; padding-bottom:15px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:flex-end;">
+            <div>
+                <h1 id="rpt_company" style="margin:0; color:#005691;">Company Name</h1>
+                <div style="font-size:14px; color:#555;">VSME Report (<span id="rpt_type">Basic</span>)</div>
+            </div>
+            <div style="text-align:right; font-size:12px; color:#666;">Date: <span id="rpt_date"></span></div>
+        </div>
+
+        <!-- Basic Module Content -->
+        <h2>BASIC MODULE (ESRS S1/G1/E1)</h2>
+
+        <h4>General & Strategy (B1-B2)</h4>
+        <table>
+            <tr><th>Selected Option</th><td id="res_b1_option"></td></tr>
+            <tr><th>Legal Form / NACE</th><td><span id="res_b1_form"></span> / <span id="res_b1_nace"></span></td></tr>
+            <tr><th>Turnover / Employees</th><td>€ <span id="res_b1_turnover"></span> / <span id="res_b1_emp"></span> HC</td></tr>
+            <tr><th>Transition Practices</th><td id="res_b2_prac"></td></tr>
+        </table>
+
+        <h4>Environment (B3-B7)</h4>
+        <table>
+            <tr><th>Energy (Total/Ren/Fossil)</th><td>Total: <span id="res_b3_total"></span> | Ren: <span id="res_b3_ren"></span> | Fos: <span id="res_b3_non"></span> (MWh)</td></tr>
+            <tr><th>GHG Emissions</th><td>Scope 1: <span id="res_b3_s1"></span> | Scope 2: <span id="res_b3_s2"></span> (tCO2e)</td></tr>
+            <tr><th>Pollution & Sensitive Sites</th><td><span id="res_b4"></span> | <span id="res_b5"></span></td></tr>
+            <tr><th>Water & Waste</th><td>Water: <span id="res_b6"></span> m3 | Recycled: <span id="res_b7"></span> T</td></tr>
+        </table>
+
+        <h4>Social & Governance (B8-B11)</h4>
+        <table>
+            <tr><th>Workforce</th><td>Perm: <span id="res_b8_perm"></span> | Female: <span id="res_b8_female"></span></td></tr>
+            <tr><th>Safety & Pay</th><td>Accidents: <span id="res_b9"></span> | Min Wage: <span id="res_b10"></span></td></tr>
+            <tr><th>Governance (B11)</th><td>Convictions: <span id="res_b11_con"></span> | Fines: € <span id="res_b11_fin"></span></td></tr>
+        </table>
+
+        <!-- Business Partners Section - ENHANCED -->
+        <div id="rpt_bp_section" class="hidden">
+            <h2 style="color:#4f46e5; border-bottom-color:#4f46e5;">BUSINESS PARTNERS MODULE (P1-P2)</h2>
+
+            <h4>Supply Chain & Human Rights (P1)</h4>
+            <table>
+                <tr><th>Code of Conduct</th><td id="res_bp_code"></td></tr>
+                <tr><th>Grievance Mechanism</th><td id="res_bp_grievance"></td></tr>
+                <tr><th>Payment Practices</th><td id="res_bp_pay"></td></tr>
+            </table>
+
+            <h4>Climate & Financial Alignment (P2)</h4>
+            <table>
+                <tr><th>Excluded Sector Revenue</th><td id="res_bp_excluded_rev"></td></tr>
+                <tr><th>Scope 3 Calculation Status</th><td id="res_bp_scope3_status"></td></tr>
+                <tr><th>Identified Climate Risks</th><td id="res_bp_climate_risks"></td></tr>
+            </table>
+        </div>
+
+        <!-- Comprehensive Section -->
+        <div id="rpt_comp_section" class="hidden">
+            <h2 style="color:#0f766e; border-bottom-color:#0f766e;">COMPREHENSIVE MODULE (Option B - Strategy & Governance Focus)</h2>
+
+            <h4>Strategy & Policies (C1-C2)</h4>
+            <table>
+                <tr><th>C1 Business Model</th><td id="res_c1"></td></tr>
+                <tr><th>C2 Policies & Accountability</th><td id="res_c2"></td></tr>
+            </table>
+
+            <h4>Environment (C3-C4)</h4>
+            <table>
+                <tr><th>C3 GHG Targets</th><td id="res_c3"></td></tr>
+                <tr><th>C4 Climate Risks</th><td id="res_c4"></td></tr>
+            </table>
+
+            <h4>Social (C5-C7)</h4>
+            <table>
+                <tr><th>C5 Mgmt Gender Ratio</th><td id="res_c5"></td></tr>
+                <tr><th>C6 Human Rights Policy</th><td id="res_c6"></td></tr>
+                <tr><th>C7 Incidents</th><td id="res_c7"></td></tr>
+            </table>
+
+            <h4>Governance (C8-C9)</h4>
+            <table>
+                <tr><th>C8 Excluded Revenues</th><td id="res_c8"></td></tr>
+                <tr><th>C9 Board Diversity</th><td id="res_c9"></td></tr>
+            </table>
+        </div>
+
+        <div style="margin-top:40px; border-top:1px solid #ccc; width:40%; padding-top:10px;">Authorized Signature</div>
+    </div>
+
+
+    <!-- Initialize Lucide icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
