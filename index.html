@@ -35,6 +35,7 @@
 
         /* Landing Page Styles */
         .hero-bg {
+            /* Using a placeholder for visual effect */
             background-image: url('https://placehold.co/1200x600/1e3a8a/ffffff?text=AI+ESG+Copilot+for+Auto+Aftermarket');
             background-size: cover;
             background-position: center;
@@ -56,6 +57,13 @@
             animation: fadeIn 0.4s ease-in-out;
         }
 
+        /* Industrial Data Architecture Aesthetic */
+        .data-architecture {
+            border: 2px dashed #3b82f6;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            background-color: #f8faff; /* Very light blue tint */
+        }
+        
         /* Report Generator Styles */
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
@@ -121,27 +129,40 @@
                 navHome: "Home",
                 navProblem: "Problem",
                 navSolution: "Solution",
+                navVision: "Vision", // Added Navigation
                 navFeatures: "Features",
                 navDemo: "Demo",
                 navContact: "Contact",
-                heroTitle: "The AI ESG Copilot for Automotive SMEs",
-                heroSubtitle: "Streamline CSRD, Scope 3, and Circularity Compliance for Garages & Distributors in the EU.",
-                heroButton: "Request a Demo",
+                // Updated Hero to reflect Access Key / North Star
+                heroTitle: "Compliance is your Access Key.<br>Sustainability is your North Star.",
+                // Refined Subtitle: Focus on the technical moat (SKU data) vs. generic tools.
+                heroSubtitle: "The first **Vertical SaaS** platform to solve the Scope 3 data gap using **SKU-level emissions data**—a problem generic ESG tools cannot address.",
+                heroButton: "Get Your Access Key",
                 sectionProblem: "The Challenge for SMEs",
                 problemText: "Small and mid-sized automotive businesses in Europe face growing ESG pressure (CSRD, CBAM, Battery Passport) but lack the time, tools, and expertise to comply. Over 70% are unprepared, relying on manual spreadsheets.",
                 barrier1: "Lack of Time & Resources",
                 barrier2: "Confusing ESG Frameworks",
                 barrier3: "No Internal Expertise",
                 barrier4: "Increasing OEM Pressure",
-                sectionSolution: "Demandio: The Simple Solution",
-                solutionText: "Demandio is an AI-powered ESG and circularity platform built specifically for the automotive aftermarket. It turns complex regulations into simple, profitable actions, enabling compliance and green growth.",
-                feature1Title: "AI ESG Copilot",
+                sectionSolution: "Demandio: The Vertical SaaS Solution", // Refined Section Title
+                solutionText: "Demandio is an AI-powered ESG and circularity platform built exclusively for the automotive aftermarket. It turns complex regulations into simple, profitable actions, enabling compliance and green growth.",
+                // New Vision Section Keys
+                sectionVision: "From Compliance to Impact: Our Theory of Change",
+                visionIntro: "We don't just build software; we build a bridge to the future. Our platform helps SMEs climb from today's regulatory pressure to tomorrow's competitive advantage.",
+                accessKeyTitle: "The Access Key (Today)",
+                accessKeyDesc: "Solving the immediate pain: CSRD Compliance, Supplier Audits, and CBAM Reporting.",
+                northStarTitle: "The North Star (Tomorrow)",
+                northStarDesc: "Ensuring SMEs remain the backbone of the economy by becoming competitive, circular, and diverse.",
+                impactMetric1: "SMEs Kept Competitive",
+                impactMetric2: "CO₂ Decarbonized",
+                // Features
+                feature1Title: "AI ESG Copilot (The Mechanic's Language)", // Refined Title
                 feature1Desc: "Step-by-step guidance using plain, garage-specific language, not ESG jargon. Perfect for non-experts.",
-                feature2Title: "Part-Level CO₂ Tracker",
-                feature2Desc: "Calculate precise Scope 3 emissions for every part and repair job using proprietary SKU-to-CO₂ data.",
-                feature3Title: "One-Click ESG Kit (CSRD-Lite)",
+                feature2Title: "Part-Level CO₂ Tracker (Scope 3 Granularity)", // Refined Title
+                feature2Desc: "Calculate precise Scope 3 emissions for every part and repair job using proprietary SKU-to-CO₂ data, solving the data gap generic tools ignore.",
+                feature3Title: "One-Click ESG Kit (Audit Defense)", // Refined Title
                 feature3Desc: "Auto-generate buyer-ready, audit-ready compliance reports, including Scope 1-3 carbon footprint and circularity metrics.",
-                feature4Title: "EU Subsidy Finder",
+                feature4Title: "EU Subsidy Finder (Immediate Financial ROI)", // Refined Title
                 feature4Desc: "Automatically match your business with relevant EU/National green grants and subsidies, and generate application forms.",
                 sectionFeatures: "Core Features That Drive Compliance",
                 sectionDemo: "See Demandio in Action",
@@ -169,27 +190,36 @@
                 navHome: "Startpagina",
                 navProblem: "Probleem",
                 navSolution: "Oplossing",
+                navVision: "Visie",
                 navFeatures: "Functies",
                 navDemo: "Demo Aanvragen",
                 navContact: "Contact",
-                heroTitle: "De AI ESG Copilot voor Automotive MKB",
-                heroSubtitle: "Stroomlijn CSRD, Scope 3 en Circulariteit Conformiteit voor Garages & Distributeurs in de EU.",
-                heroButton: "Vraag een Demo Aan",
+                heroTitle: "Compliance is uw Toegangssleutel.<br>Duurzaamheid is uw Poolster.",
+                heroSubtitle: "Wij zijn de eerste **Vertical SaaS** die de Scope 3 data kloof oplost met **SKU-niveau emissiegegevens**—een probleem dat generieke ESG-tools niet kunnen aanpakken.", // Refined Subtitle
+                heroButton: "Krijg uw Toegangssleutel",
                 sectionProblem: "De Uitdaging voor MKB",
                 problemText: "Kleine en middelgrote autobedrijven in Europa staan onder toenemende ESG-druk (CSRD, CBAM, Batterijpaspoort) maar missen de tijd, tools en expertise om te voldoen. Meer dan 70% is onvoorbereid en vertrouwt op handmatige spreadsheets.",
                 barrier1: "Gebrek aan Tijd & Middelen",
                 barrier2: "Verwarrende ESG Frameworks",
                 barrier3: "Geen Interne Expertise",
                 barrier4: "Toenemende OEM Druk",
-                sectionSolution: "Demandio: De Eenvoudige Oplossing",
+                sectionSolution: "Demandio: De Vertical SaaS Oplossing", // Refined Section Title
                 solutionText: "Demandio is een AI-aangedreven ESG- en circulariteitsplatform dat specifiek is gebouwd voor de automotive aftermarket. Het zet complexe regelgeving om in eenvoudige, winstgevende acties, waardoor compliance en groene groei mogelijk worden.",
-                feature1Title: "AI ESG Copilot",
+                sectionVision: "Van Compliance naar Impact: Onze 'Theory of Change'",
+                visionIntro: "We bouwen niet alleen software; we bouwen een brug naar de toekomst. Ons platform helpt MKB-bedrijven te klimmen van de regeldruk van vandaag naar het concurrentievoordeel van morgen.",
+                accessKeyTitle: "De Toegangssleutel (Vandaag)",
+                accessKeyDesc: "Het oplossen van de directe pijn: CSRD Compliance, Leveranciersaudits en CBAM-rapportage.",
+                northStarTitle: "De Poolster (Morgen)",
+                northStarDesc: "Zorgen dat het MKB de ruggengraat van de economie blijft door concurrerend, circulair en divers te worden.",
+                impactMetric1: "MKB Concurrerend Gehouden",
+                impactMetric2: "CO₂ Gedecarboniseerd",
+                feature1Title: "AI ESG Copilot (De Monteurstaal)",
                 feature1Desc: "Stapsgewijze begeleiding in duidelijke, garage-specifieke taal, geen ESG-jargon. Perfect voor niet-experts.",
-                feature2Title: "CO₂-Tracker op Onderdeelniveau",
-                feature2Desc: "Bereken nauwkeurige Scope 3-emissies voor elk onderdeel en elke reparatie met behulp van eigen SKU-naar-CO₂-gegevens.",
-                feature3Title: "Eén-Klik ESG Kit (CSRD-Lite)",
+                feature2Title: "CO₂-Tracker op Onderdeelniveau (Scope 3 Granulariteit)",
+                feature2Desc: "Bereken nauwkeurige Scope 3-emissies voor elk onderdeel en elke reparatie met behulp van eigen SKU-naar-CO₂-gegevens, waardoor de data kloof die generieke tools negeren wordt opgelost.",
+                feature3Title: "Eén-Klik ESG Kit (Audit Defensie)",
                 feature3Desc: "Genereer automatisch auditklare compliance-rapporten, inclusief Scope 1-3 koolstofvoetafdruk en circulariteitsstatistieken, klaar voor de koper.",
-                feature4Title: "EU Subsidiezoeker",
+                feature4Title: "EU Subsidiezoeker (Directe Financiële ROI)",
                 feature4Desc: "Koppel uw bedrijf automatisch aan relevante EU/Nationale groene subsidies en genereer aanvraagformulieren.",
                 sectionFeatures: "Kernfuncties die Compliance Stimuleren",
                 sectionDemo: "Bekijk Demandio in Actie",
@@ -308,42 +338,47 @@
         // ===========================================
         
         function checkScreening() {
-            const isListed = document.querySelector('input[name="isListed"]:checked').value === 'yes';
+            const listedInput = document.querySelector('input[name="isListed"]:checked');
+            const isListed = listedInput ? listedInput.value === 'yes' : false;
+
             document.getElementById('listed-warning').classList.toggle('hidden', !isListed);
             document.getElementById('startBtn').disabled = isListed;
             document.getElementById('startBtn').classList.toggle('opacity-50', isListed);
         }
 
         function startApp() {
-            config.listed = document.querySelector('input[name="isListed"]:checked').value === 'yes';
+            const listedInput = document.querySelector('input[name="isListed"]:checked');
+            const policiesInput = document.querySelector('input[name="hasPolicies"]:checked');
+
+            config.listed = listedInput ? listedInput.value === 'yes' : false;
             if(config.listed) return;
 
             config.bpModule = document.getElementById('reportPurpose').value === 'partner';
-            config.comprehensive = document.querySelector('input[name="hasPolicies"]:checked').value === 'yes';
-
-            // Define Steps Flow
+            config.comprehensive = policiesInput ? policiesInput.value === 'yes' : false;
+            
+            // 1. Define Steps Flow
             stepsList = [1, 2, 3, 'gov']; // Basic steps
 
             if(config.bpModule) stepsList.push('bp');
 
             if(config.comprehensive) {
                 stepsList.push('c1', 'c2');
-                document.getElementById('config-summary').innerText = "Option B: Basic + Comprehensive";
-                document.getElementById('b1_option').value = "Option B: Basic + Comprehensive";
+                document.getElementById('config-summary').innerText = "Option B: Basic + Comprehensive" + (config.bpModule ? " + BP Module" : "");
+                document.getElementById('b1_option').value = "Option B: Basic + Comprehensive" + (config.bpModule ? " + BP Module" : "");
             } else {
-                document.getElementById('config-summary').innerText = "Option A: Basic Module";
-                document.getElementById('b1_option').value = "Option A: Basic Module";
+                document.getElementById('config-summary').innerText = "Option A: Basic Module" + (config.bpModule ? " + BP Module" : "");
+                document.getElementById('b1_option').value = "Option A: Basic Module" + (config.bpModule ? " + BP Module" : "");
             }
 
             stepsList.push('generate');
 
-            // Render Progress Bar
+            // 2. Render Progress Bar
             renderProgressBar();
 
-            // Show App
+            // 3. Show App
             document.getElementById('screening-section').classList.add('hidden');
             document.getElementById('app-container').classList.remove('hidden');
-            showStepIndex(0);
+            showStepIndex(0); // Show the first step
         }
 
         // Navigation
@@ -372,11 +407,16 @@
             const stepId = stepsList[index];
 
             document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
-            document.getElementById(`step-${stepId}`).classList.add('active');
+            const currentStepElement = document.getElementById(`step-${stepId}`);
+            if (currentStepElement) {
+                currentStepElement.classList.add('active');
+            }
 
             // Update Indicators
             stepsList.forEach((_, idx) => {
                 const ind = document.getElementById(`ind-${idx}`);
+                if(!ind) return; // Skip if indicator not found
+
                 if(idx < index) {
                     ind.className = "w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold border-2 border-white shadow bg-green-500 text-white text-xs";
                     ind.innerHTML = "✓";
@@ -391,6 +431,16 @@
 
             document.getElementById('prevBtn').classList.toggle('hidden', index === 0);
             document.getElementById('nextBtn').classList.toggle('hidden', index === stepsList.length - 1);
+            
+            // Change Next button text for the last step before generate
+            const nextBtn = document.getElementById('nextBtn');
+            const penultimateIndex = stepsList.length - 2;
+            if (index === penultimateIndex) {
+                 nextBtn.textContent = 'Review & Finalize';
+            } else {
+                 nextBtn.textContent = 'Next Step';
+            }
+
             window.scrollTo(0,0);
         }
 
@@ -400,18 +450,18 @@
                 document.getElementById('b1_name').value = "AutoParts NL B.V.";
                 document.getElementById('b1_basis').value = "Individual basis";
                 document.getElementById('b1_legal_form').value = "B.V.";
-                document.getElementById('b1_nace').value = "45.31";
+                document.getElementById('b1_nace').value = "45.31 (Wholesale of motor parts)";
                 document.getElementById('b1_country').value = "Netherlands";
-                document.getElementById('b1_turnover').value = "12500000";
+                document.getElementById('b1_turnover').value = "12,500,000";
                 document.getElementById('b1_employees').value = "45";
-                document.getElementById('b2_practices').value = "Installation of LED lighting and consolidation of shipments to reduce CO2 per delivery.";
+                document.getElementById('b2_practices').value = "Installation of LED lighting and consolidation of shipments to reduce Scope 3 CO2 per delivery. We actively promote the sale of remanufactured parts.";
             }
             if(step === 2) {
                 document.getElementById('b3_energy_total').value = "480";
                 document.getElementById('b3_energy_ren').value = "480";
                 document.getElementById('b3_energy_nonren').value = "0";
-                document.getElementById('b3_scope1').value = "48.5";
-                document.getElementById('b3_scope2').value = "0";
+                document.getElementById('b3_scope1').value = "4.5"; // Assuming minimal transport fleet combustion
+                document.getElementById('b3_scope2').value = "0"; // Assuming 100% renewable electricity
                 document.getElementById('b4_pollution').value = "None (Minimal non-hazardous vehicle maintenance fluids)";
                 document.getElementById('b5_sensitive').value = "0";
                 document.getElementById('b6_water').value = "450";
@@ -434,17 +484,17 @@
                 document.getElementById('bp_payment').value = "30 days (average)";
                 document.getElementById('bp_excluded_rev').value = "0%";
                 document.getElementById('bp_scope3_status').value = "Estimated";
-                document.getElementById('bp_climate_risks').value = "Physical risk: Increased extreme heat affecting warehouse cooling (Low). Transition risk: None identified.";
+                document.getElementById('bp_climate_risks').value = "Physical risk: Increased extreme heat affecting warehouse cooling (Low). Transition risk: Dependence on ICE products (Medium).";
             }
             if(step === 'c1') {
-                document.getElementById('c1_strategy').value = "Wholesale of auto parts in Benelux. Key focus on electric vehicle maintenance parts. Key partners: Bosch, ZF.";
-                document.getElementById('c2_policies').value = "Sustainability managed by HSE committee reporting to the Board. Policies updated annually based on external risk assessment.";
-                document.getElementById('c3_targets').value = "Scope 1: -50% by 2030 (Base 2022). Scope 3 (Transport): -20% by 2035.";
-                document.getElementById('c4_risks').value = "Physical risk: Flooding in HQ region (Low). Adaptation: Site infrastructure protected and insurance coverage adjusted. Financial impact: Minimal.";
+                document.getElementById('c1_strategy').value = "Wholesale of auto parts in Benelux. Key focus on electric vehicle maintenance parts. Key partners: Bosch, ZF. Moving towards a circular business model by 2030.";
+                document.getElementById('c2_policies').value = "Sustainability managed by HSE committee reporting to the Board. Policies updated annually based on external risk assessment and ISO 14001 principles. All employees trained yearly.";
+                document.getElementById('c3_targets').value = "Scope 1: -50% by 2030 (Base 2022). Scope 3 (Transport): -20% by 2035. Circularity: 15% revenue from remanufactured parts by 2027.";
+                document.getElementById('c4_risks').value = "Physical risk: Flooding in HQ region (Low). Adaptation: Site infrastructure protected and insurance coverage adjusted. Financial impact: Minimal. Transition risk: None identified.";
             }
             if(step === 'c2') {
-                document.getElementById('c5_mgmt_gender').value = "40% Female";
-                document.getElementById('c6_policy').value = "Yes";
+                document.getElementById('c5_mgmt_gender').value = "40% Female (2/5 executives)";
+                document.getElementById('c6_policy').value = "Yes (Child/Forced Labor, etc.)";
                 document.getElementById('c7_incidents').value = "None";
                 document.getElementById('c8_revenue').value = "0% excluded sectors";
                 document.getElementById('c9_board_gender').value = "1 Female / 3 Male (25% Female)";
@@ -457,7 +507,14 @@
             document.getElementById('rpt_company').innerText = document.getElementById('b1_name').value;
             document.getElementById('rpt_date').innerText = new Date().toLocaleDateString();
             document.getElementById('res_b1_option').innerText = document.getElementById('b1_option').value;
-            document.getElementById('rpt_type').innerText = config.comprehensive ? "Option B (Comprehensive)" : (config.bpModule ? "Option BP (Business Partner)" : "Option A (Basic)");
+            
+            let rptType = "Option A (Basic)";
+            if(config.comprehensive) {
+                rptType = "Option B (Comprehensive)";
+            } else if(config.bpModule) {
+                 rptType = "Option BP (Business Partner)";
+            }
+            document.getElementById('rpt_type').innerText = rptType;
 
             // Basic Mapping
             document.getElementById('res_b1_form').innerText = document.getElementById('b1_legal_form').value;
@@ -528,6 +585,11 @@
             document.getElementById('prevBtn').onclick = () => showStepIndex(currentStep - 1);
             document.getElementById('generateBtn').onclick = generateReport;
 
+            // Set up screening listeners
+            document.querySelectorAll('input[name="isListed"], #reportPurpose, input[name="hasPolicies"]').forEach(el => {
+                el.addEventListener('change', checkScreening);
+            });
+
             // Set initial content
             updateContent();
             checkScreening(); // Initialize screening check
@@ -543,6 +605,7 @@
         <header class="bg-white shadow-md sticky top-0 z-10 no-print">
             <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
                 <div class="flex items-center space-x-2">
+                    <!-- Leaf Icon for Sustainability/Demandio -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-leaf"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.2 7.7 16.5 12.3 17.8 15.6a2 2 0 0 0 2 1.5c.3 0 .7-.2 1-.5-.4-.5-.4-1.2-.5-1.7-.6-1.4-1.4-3.5-3.6-6.4A4.3 4.3 0 0 0 12 2c-3.1 0-7 3.5-7 10 0 4.4 3 8 7 8Z"/><path d="M12 22a7 7 0 0 0 5-2.2c-2.3-2.6-3.7-6.2-3.7-9.8 0-2.3.9-4.5 2.4-6.2-3.4 1-6.6 4.4-7.4 8.7a9 9 0 0 0 2.8 11.7"/></svg>
                     <h1 class="text-2xl font-bold text-demandio-blue">Demandio.cloud</h1>
                 </div>
@@ -551,6 +614,7 @@
                         <a href="#home" class="hover:text-demandio-light transition duration-150" data-lang-key="navHome">Home</a>
                         <a href="#problem" class="hover:text-demandio-light transition duration-150" data-lang-key="navProblem">Problem</a>
                         <a href="#solution" class="hover:text-demandio-light transition duration-150" data-lang-key="navSolution">Solution</a>
+                        <a href="#vision" class="hover:text-demandio-light transition duration-150" data-lang-key="navVision">Vision</a> <!-- Added Vision Link -->
                         <a href="#features" class="hover:text-demandio-light transition duration-150" data-lang-key="navFeatures">Features</a>
                         <a href="#demo" class="hover:text-demandio-light transition duration-150" data-lang-key="navDemo">Demo</a>
                         <a href="#contact" class="hover:text-demandio-light transition duration-150" data-lang-key="navContact">Contact</a>
@@ -565,9 +629,9 @@
             <div class="absolute inset-0 bg-demandio-blue opacity-80"></div>
             <div class="relative max-w-4xl mx-auto px-4 z-10">
                 <span class="inline-block bg-demandio-green text-white text-xs font-semibold px-3 py-1 rounded-full uppercase mb-4">ESG Compliance Made Simple</span>
-                <h2 class="text-4xl sm:text-6xl font-extrabold mb-4 leading-tight" data-lang-key="heroTitle">The AI ESG Copilot for Automotive SMEs</h2>
-                <p class="text-lg sm:text-xl mb-8 font-light" data-lang-key="heroSubtitle">Streamline CSRD, Scope 3, and Circularity Compliance for Garages & Distributors in the EU.</p>
-                <a href="#demo" class="inline-block px-10 py-4 bg-demandio-green text-white text-lg font-bold rounded-xl shadow-lg hover:bg-green-700 transition duration-300 transform hover:scale-105" data-lang-key="heroButton">Request a Demo</a>
+                <h2 class="text-4xl sm:text-6xl font-extrabold mb-4 leading-tight" data-lang-key="heroTitle">Compliance is your Access Key.<br>Sustainability is your North Star.</h2>
+                <p class="text-lg sm:text-xl mb-8 font-light" data-lang-key="heroSubtitle">We are the first **Vertical SaaS** platform to solve the Scope 3 data gap using **SKU-level emissions data**—a problem generic ESG tools cannot address.</p>
+                <a href="#demo" class="inline-block px-10 py-4 bg-demandio-green text-white text-lg font-bold rounded-xl shadow-lg hover:bg-green-700 transition duration-300 transform hover:scale-105" data-lang-key="heroButton">Get Your Access Key</a>
             </div>
         </section>
 
@@ -609,12 +673,12 @@
         <!-- Solution Section -->
         <section id="solution" class="py-16 md:py-24 bg-demandio-blue text-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h3 class="text-4xl font-bold text-center mb-12 section-header after:bg-demandio-green after:mx-auto" data-lang-key="sectionSolution">Demandio: The Simple Solution</h3>
-                <p class="max-w-4xl mx-auto text-center text-gray-200 mb-16 text-lg" data-lang-key="solutionText">Demandio is an AI-powered ESG and circularity platform built specifically for the automotive aftermarket. It turns complex regulations into simple, profitable actions, enabling compliance and green growth.</p>
+                <h3 class="text-4xl font-bold text-center mb-12 section-header after:bg-demandio-green after:mx-auto" data-lang-key="sectionSolution">Demandio: The Vertical SaaS Solution</h3>
+                <p class="max-w-4xl mx-auto text-center text-gray-200 mb-16 text-lg" data-lang-key="solutionText">Demandio is an AI-powered ESG and circularity platform built exclusively for the automotive aftermarket. It turns complex regulations into simple, profitable actions, enabling compliance and green growth.</p>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <!-- Visual/Diagram (Simplified Theory of Change) -->
-                    <div class="p-8 bg-white rounded-xl shadow-2xl">
+                    <div class="p-8 bg-white data-architecture rounded-xl shadow-2xl">
                         <h4 class="text-2xl font-bold text-gray-800 mb-6">Theory of Change in Action</h4>
                         <!-- Diagram Step 1: Input -->
                         <div class="flex items-center space-x-4 mb-4">
@@ -672,45 +736,100 @@
             </div>
         </section>
 
+        <!-- Vision Section (Access Key / North Star) - NEW -->
+        <section id="vision" class="py-16 md:py-24 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h3 class="text-4xl font-bold text-center text-gray-800 mb-6 section-header" data-lang-key="sectionVision">From Compliance to Impact: Our Theory of Change</h3>
+                <p class="max-w-3xl mx-auto text-center text-gray-600 mb-16 text-lg" data-lang-key="visionIntro">We don't just build software; we build a bridge to the future. Our platform helps SMEs climb from today's regulatory pressure to tomorrow's competitive advantage.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- The Access Key (MVP) -->
+                    <div class="bg-gray-50 p-8 rounded-2xl border-2 border-demandio-blue/20 hover:border-demandio-blue transition duration-300">
+                        <div class="flex items-center space-x-4 mb-6">
+                            <div class="w-12 h-12 bg-demandio-blue text-white rounded-full flex items-center justify-center">
+                                <i data-lucide="key" class="w-6 h-6"></i>
+                            </div>
+                            <h4 class="text-2xl font-bold text-demandio-blue" data-lang-key="accessKeyTitle">The Access Key (Today)</h4>
+                        </div>
+                        <p class="text-gray-600 text-lg mb-4" data-lang-key="accessKeyDesc">Solving the immediate pain: CSRD Compliance, Supplier Audits, and CBAM Reporting.</p>
+                        <div class="flex items-center space-x-2 text-sm font-semibold text-gray-500">
+                            <i data-lucide="check" class="w-4 h-4 text-green-500"></i> <span>Monetary KPI: Revenue Growth</span>
+                        </div>
+                        <div class="flex items-center space-x-2 text-sm font-semibold text-gray-500 mt-2">
+                            <i data-lucide="check" class="w-4 h-4 text-green-500"></i> <span>Operational KPI: Audit Pass Rate</span>
+                        </div>
+                    </div>
+
+                    <!-- The North Star (Vision) -->
+                    <div class="bg-gradient-to-br from-demandio-blue to-demandio-light text-white p-8 rounded-2xl shadow-xl transform md:-translate-y-4">
+                        <div class="flex items-center space-x-4 mb-6">
+                            <div class="w-12 h-12 bg-white text-demandio-blue rounded-full flex items-center justify-center">
+                                <i data-lucide="compass" class="w-6 h-6"></i>
+                            </div>
+                            <h4 class="text-2xl font-bold" data-lang-key="northStarTitle">The North Star (Tomorrow)</h4>
+                        </div>
+                        <p class="text-blue-100 text-lg mb-6" data-lang-key="northStarDesc">Ensuring SMEs remain the backbone of the economy by becoming competitive, circular, and diverse.</p>
+                        
+                        <div class="bg-white/20 rounded-lg p-4 backdrop-blur-sm">
+                            <h5 class="font-bold text-sm uppercase tracking-wide mb-2 opacity-80">Our Impact KPIs</h5>
+                            <div class="flex flex-col space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span data-lang-key="impactMetric1"><i data-lucide="cog" class="inline-block w-4 h-4 mr-1"></i> SMEs Kept Competitive (Survival Rate)</span>
+                                    <span class="font-bold text-demandio-green">Target: 10,000+</span>
+                                </div>
+                                <div class="w-full bg-white/30 h-1 rounded-full"><div class="bg-demandio-green h-1 rounded-full w-3/4"></div></div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <span data-lang-key="impactMetric2"><i data-lucide="gauge" class="inline-block w-4 h-4 mr-1"></i> CO₂ Decarbonized (via Circularity)</span>
+                                    <span class="font-bold text-demandio-green">Target: 50kT</span>
+                                </div>
+                                <div class="w-full bg-white/30 h-1 rounded-full"><div class="bg-demandio-green h-1 rounded-full w-1/2"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Features Section (The four core pillars) -->
         <section id="features" class="py-16 md:py-24 bg-gray-50">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <h3 class="text-4xl font-bold text-center text-gray-800 mb-12 section-header" data-lang-key="sectionFeatures">Core Features That Drive Compliance</h3>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    <!-- Feature 1: AI ESG Copilot -->
+                    <!-- Feature 1: AI ESG Copilot (The Mechanic's Language) -->
                     <div class="bg-white p-6 rounded-xl shadow-lg border-b-4 border-demandio-light hover:shadow-xl transition duration-300">
                         <div class="bg-demandio-light/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                            <i data-lucide="bot" class="w-6 h-6 text-demandio-light"></i>
+                            <i data-lucide="wrench" class="w-6 h-6 text-demandio-light"></i>
                         </div>
-                        <h4 class="text-xl font-bold text-gray-800 mb-2" data-lang-key="feature1Title">AI ESG Copilot</h4>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2" data-lang-key="feature1Title">AI ESG Copilot (The Mechanic's Language)</h4>
                         <p class="text-gray-600" data-lang-key="feature1Desc">Step-by-step guidance using plain, garage-specific language, not ESG jargon. Perfect for non-experts.</p>
                     </div>
 
-                    <!-- Feature 2: Part-Level CO₂ Tracker -->
+                    <!-- Feature 2: Part-Level CO₂ Tracker (Scope 3 Granularity) -->
                     <div class="bg-white p-6 rounded-xl shadow-lg border-b-4 border-demandio-green hover:shadow-xl transition duration-300">
                         <div class="bg-demandio-green/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                            <i data-lucide="gauge" class="w-6 h-6 text-demandio-green"></i>
+                            <i data-lucide="route" class="w-6 h-6 text-demandio-green"></i>
                         </div>
-                        <h4 class="text-xl font-bold text-gray-800 mb-2" data-lang-key="feature2Title">Part-Level CO₂ Tracker</h4>
-                        <p class="text-gray-600" data-lang-key="feature2Desc">Calculate precise Scope 3 emissions for every part and repair job using proprietary SKU-to-CO₂ data.</p>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2" data-lang-key="feature2Title">Part-Level CO₂ Tracker (Scope 3 Granularity)</h4>
+                        <p class="text-gray-600" data-lang-key="feature2Desc">Calculate precise Scope 3 emissions for every part and repair job using proprietary SKU-to-CO₂ data, solving the data gap generic tools ignore.</p>
                     </div>
 
-                    <!-- Feature 3: One-Click ESG Kit (CSRD-Lite) -->
+                    <!-- Feature 3: One-Click ESG Kit (Audit Defense) -->
                     <div class="bg-white p-6 rounded-xl shadow-lg border-b-4 border-demandio-yellow hover:shadow-xl transition duration-300">
                         <div class="bg-demandio-yellow/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
                             <i data-lucide="file-text" class="w-6 h-6 text-demandio-yellow"></i>
                         </div>
-                        <h4 class="text-xl font-bold text-gray-800 mb-2" data-lang-key="feature3Title">One-Click ESG Kit (CSRD-Lite)</h4>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2" data-lang-key="feature3Title">One-Click ESG Kit (Audit Defense)</h4>
                         <p class="text-gray-600" data-lang-key="feature3Desc">Auto-generate buyer-ready, audit-ready compliance reports, including Scope 1-3 carbon footprint and circularity metrics.</p>
                     </div>
 
-                    <!-- Feature 4: EU Subsidy Finder -->
+                    <!-- Feature 4: EU Subsidy Finder (Immediate Financial ROI) -->
                     <div class="bg-white p-6 rounded-xl shadow-lg border-b-4 border-purple-500 hover:shadow-xl transition duration-300">
                         <div class="bg-purple-500/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
                             <i data-lucide="piggy-bank" class="w-6 h-6 text-purple-500"></i>
                         </div>
-                        <h4 class="text-xl font-bold text-gray-800 mb-2" data-lang-key="feature4Title">EU Subsidy Finder</h4>
+                        <h4 class="text-xl font-bold text-gray-800 mb-2" data-lang-key="feature4Title">EU Subsidy Finder (Immediate Financial ROI)</h4>
                         <p class="text-gray-600" data-lang-key="feature4Desc">Automatically match your business with relevant EU/National green grants and subsidies, and generate application forms.</p>
                     </div>
                 </div>
@@ -860,11 +979,11 @@
                     <label class="block font-bold text-gray-800 mb-2">1. Is your company (or parent) listed on an EU regulated market?</label>
                     <div class="flex gap-4">
                         <label class="flex items-center space-x-2 cursor-pointer">
-                            <input type="radio" name="isListed" value="yes" class="form-radio text-blue-600" onchange="checkScreening()">
+                            <input type="radio" name="isListed" value="yes" class="form-radio text-blue-600">
                             <span>Yes (Listed)</span>
                         </label>
                         <label class="flex items-center space-x-2 cursor-pointer">
-                            <input type="radio" name="isListed" value="no" class="form-radio text-blue-600" checked onchange="checkScreening()">
+                            <input type="radio" name="isListed" value="no" class="form-radio text-blue-600" checked>
                             <span>No (Non-Listed SME)</span>
                         </label>
                     </div>
@@ -876,7 +995,7 @@
                 <!-- Q2: Purpose & Modules -->
                 <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
                     <label class="block font-bold text-gray-800 mb-2">2. What is the primary purpose of this report?</label>
-                    <select id="reportPurpose" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500" onchange="checkScreening()">
+                    <select id="reportPurpose" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500">
                         <option value="basic">Internal Transparency / Just Starting (Basic Module Only)</option>
                         <option value="partner">Request from Business Partner / Bank (Basic + BP Module)</option>
                     </select>
@@ -888,12 +1007,12 @@
                     <label class="block font-bold text-gray-800 mb-2">3. Do you have formal sustainability policies & targets?</label>
                     <div class="flex gap-4">
                         <label class="flex items-center space-x-2 cursor-pointer">
-                            <input type="radio" name="hasPolicies" value="no" class="form-radio text-blue-600">
+                            <input type="radio" name="hasPolicies" value="no" class="form-radio text-blue-600" checked>
                             <span>No / Not yet (Basic)</span>
                         </label>
                         <label class="flex items-center space-x-2 cursor-pointer">
-                            <input type="radio" name="hasPolicies" value="yes" class="form-radio text-blue-600" checked>
-                            <span>Yes (Option B: Comprehensive)</span>
+                            <input type="radio" name="hasPolicies" value="yes" class="form-radio text-blue-600">
+                            <span>Yes (Option B: Comprehensive Narrative)</span>
                         </label>
                     </div>
                     <p class="text-xs text-gray-500 mt-2">Selecting "Yes" will enable the Comprehensive Module (C1-C9) for advanced strategy and governance reporting.</p>
@@ -935,7 +1054,7 @@
             <!-- STEP 1: General (B1-B2) -->
             <div id="step-1" class="step-content p-4 sm:p-8">
                 <div class="flex justify-between items-center border-b pb-4 mb-6">
-                    <h2 class="text-lg sm:text-xl font-bold text-gray-800">Step 1: Basic General & Strategy</h2>
+                    <h2 class="text-lg sm:text-xl font-bold text-gray-800">Step 1: Basic General & Strategy (B1-B2)</h2>
                     <button type="button" onclick="fillFakeData(1)" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200">🪄 Auto Fill</button>
                 </div>
                 <!-- B1 -->
@@ -1033,8 +1152,9 @@
                     <h2 class="text-lg sm:text-xl font-bold text-gray-800">Step 4: Governance (B11)</h2>
                     <button type="button" onclick="fillFakeData(4)" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200">🪄 Auto Fill</button>
                 </div>
+                <h3 class="font-bold text-red-700 mb-4 bg-red-50 p-2 rounded">Legal & Fines</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div><label class="block text-sm font-bold mb-1">Convictions</label><input type="number" id="b11_convictions" class="w-full border p-2 rounded" required></div>
+                    <div><label class="block text-sm font-bold mb-1">Convictions (#)</label><input type="number" id="b11_convictions" class="w-full border p-2 rounded" required></div>
                     <div><label class="block text-sm font-bold mb-1">Fines (€)</label><input type="number" id="b11_fines" class="w-full border p-2 rounded" required></div>
                 </div>
             </div>
