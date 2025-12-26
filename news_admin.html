@@ -11,6 +11,9 @@
     <!-- Babel for JSX (Standalone) -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <!-- Quill Rich Text Editor Styles -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
@@ -19,8 +22,13 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
         .sidebar-item-active { background-color: #1e3a8a; color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .form-input { width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.75rem; outline: none; }
-        .ql-container { font-family: 'Inter', sans-serif !important; border-bottom-left-radius: 0.75rem; border-bottom-right-radius: 0.75rem; }
+        .form-input { width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.75rem; outline: none; transition: all 0.2s; }
+        .form-input:focus { border-color: #3b82f6; ring: 2px; ring-color: #bfdbfe; }
+        .ql-container { font-family: 'Inter', sans-serif !important; border-bottom-left-radius: 0.75rem; border-bottom-right-radius: 0.75rem; font-size: 16px; }
+        .ql-toolbar { border-top-left-radius: 0.75rem; border-top-right-radius: 0.75rem; background: #f8fafc; }
+        .ql-editor { min-height: 400px; }
+        .animate-slide-in { animation: slideIn 0.3s ease-out forwards; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
     </style>
 </head>
 <body>
@@ -29,14 +37,69 @@
     <script type="text/babel" data-type="module">
         import React, { useState, useEffect, useRef } from 'https://esm.sh/react@18.2.0';
         import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
-        import { LayoutDashboard, Newspaper, Plus, Edit2, Users, Save, ArrowLeft } from 'https://esm.sh/lucide-react@0.292.0';
+        import { 
+            LayoutDashboard, Newspaper, Settings, Plus, Edit2, 
+            Trash2, Save, X, Users, Bell, Search, Globe, ArrowLeft
+        } from 'https://esm.sh/lucide-react@0.292.0';
+
+        // --- CONFIGURATION ---
+        const SUPABASE_URL = 'https://byomcvqnuhpeazicirjg.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5b21jdnFudWhwZWF6aWNpcmpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MjMxNzMsImV4cCI6MjA4MjI5OTE3M30.Bl5sahKsZ4nX0iiPT9tKmXm_Pq3bfAjLLiVYeS3oA2g';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const App = () => {
             const [view, setView] = useState('list'); 
             const [activeTab, setActiveTab] = useState('articles');
             const [selectedArticle, setSelectedArticle] = useState(null);
-            const [articles, setArticles] = useState([{ id: 1, category: 'subsidy', title: { en: "SEBA Subsidy Pot Closing Soon", nl: "SEBA Subsidiepot Bijna Leeg" }, status: 'Published', content: { en: '', nl: '' } }]);
-            const [subscribers] = useState([{ id: 1, name: "Jan Jansen", email: "jan@demandio.nl", date: "2026-01-10", company: "Garage Utrecht" }]);
+            const [articles, setArticles] = useState([]);
+            const [subscribers, setSubscribers] = useState([]);
+            const [loading, setLoading] = useState(true);
+
+            useEffect(() => {
+                fetchData();
+            }, [activeTab]);
+
+            const fetchData = async () => {
+                setLoading(true);
+                if (activeTab === 'articles') {
+                    const { data, error } = await supabase.from('articles').select('*').order('created_at', { ascending: false });
+                    if (!error) setArticles(data);
+                } else {
+                    const { data, error } = await supabase.from('subscribers').select('*').order('joined_at', { ascending: false });
+                    if (!error) setSubscribers(data);
+                }
+                setLoading(false);
+            };
+
+            const handleDelete = async (id) => {
+                if(window.confirm('Are you sure you want to delete this article?')) {
+                    const { error } = await supabase.from('articles').delete().eq('id', id);
+                    if (!error) setArticles(articles.filter(a => a.id !== id));
+                }
+            };
+
+            const handleEdit = (article) => {
+                setSelectedArticle({
+                    ...article,
+                    title: { en: article.title_en, nl: article.title_nl },
+                    desc: { en: article.desc_en, nl: article.desc_nl },
+                    content: { en: article.content_en, nl: article.content_nl }
+                });
+                setView('edit');
+            };
+
+            const handleAddNew = () => {
+                setSelectedArticle({
+                    category: 'subsidy',
+                    read_time: '4 min read',
+                    source: 'Demandio',
+                    status: 'Draft',
+                    title: { en: '', nl: '' },
+                    desc: { en: '', nl: '' },
+                    content: { en: '', nl: '' }
+                });
+                setView('edit');
+            };
 
             const Sidebar = () => (
                 <aside className="w-64 bg-white border-r border-slate-200 h-screen sticky top-0 p-6 flex flex-col shadow-sm">
@@ -53,36 +116,144 @@
             );
 
             const ArticleListView = () => (
-                <div className="p-8"><h1 className="text-3xl font-black mb-8">Articles</h1>
+                <div className="p-8 animate-slide-in">
+                    <div className="flex justify-between items-center mb-8">
+                        <h1 className="text-3xl font-black text-slate-900">Articles</h1>
+                        <button onClick={handleAddNew} className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-700 shadow-lg transition"><Plus size={20} /> New Post</button>
+                    </div>
                     <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
                         <table className="w-full text-left">
-                            <thead className="bg-slate-50/50 text-[10px] font-black uppercase text-slate-400"><tr className="border-b"><th className="px-8 py-4">Title</th><th className="px-8 py-4">Status</th></tr></thead>
+                            <thead className="bg-slate-50/50 text-[10px] font-black uppercase text-slate-400"><tr className="border-b"><th className="px-8 py-4">Title (EN)</th><th className="px-8 py-4">Category</th><th className="px-8 py-4">Status</th><th className="px-8 py-4 text-right">Actions</th></tr></thead>
                             <tbody className="divide-y divide-slate-50">
-                                {articles.map(art => (<tr key={art.id} className="hover:bg-slate-50"><td className="px-8 py-5 font-bold text-sm">{art.title.en}</td><td className="px-8 py-5 text-[10px] uppercase font-black text-green-500">{art.status}</td></tr>))}
+                                {articles.map(art => (
+                                    <tr key={art.id} className="hover:bg-slate-50/50 transition-colors">
+                                        <td className="px-8 py-5 font-bold text-slate-900 text-sm">{art.title_en}</td>
+                                        <td className="px-8 py-5 uppercase text-[10px] font-black text-slate-400">{art.category}</td>
+                                        <td className="px-8 py-5"><span className={`text-[10px] font-black uppercase ${art.status === 'Published' ? 'text-green-500' : 'text-orange-400'}`}>{art.status}</span></td>
+                                        <td className="px-8 py-5 text-right flex justify-end gap-2">
+                                            <button onClick={() => handleEdit(art)} className="p-2 text-slate-300 hover:text-blue-600 transition"><Edit2 size={16} /></button>
+                                            <button onClick={() => handleDelete(art.id)} className="p-2 text-slate-300 hover:text-red-500 transition"><Trash2 size={16} /></button>
+                                        </td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
                     </div>
                 </div>
             );
 
-            const SubscribersListView = () => (
-                <div className="p-8"><h1 className="text-3xl font-black mb-8">Subscribers</h1>
-                    <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-                        <table className="w-full text-left">
-                            <thead className="bg-slate-50/50 text-[10px] font-black uppercase text-slate-400"><tr className="border-b"><th className="px-8 py-4">Name</th><th className="px-8 py-4">Email</th><th className="px-8 py-4">Joined</th></tr></thead>
-                            <tbody className="divide-y divide-slate-50">
-                                {subscribers.map(sub => (<tr key={sub.id} className="hover:bg-slate-50"><td className="px-8 py-5 font-bold text-sm">{sub.name}</td><td className="px-8 py-5 text-sm text-slate-500">{sub.email}</td><td className="px-8 py-5 text-xs text-slate-400">{sub.date}</td></tr>))}
-                            </tbody>
-                        </table>
+            const ArticleEditor = () => {
+                const [form, setForm] = useState(selectedArticle);
+                const [activeLang, setActiveLang] = useState('en');
+                const editorRef = useRef(null);
+                const quillInstance = useRef(null);
+
+                useEffect(() => {
+                    if (editorRef.current && !quillInstance.current) {
+                        quillInstance.current = new Quill(editorRef.current, {
+                            theme: 'snow',
+                            modules: { toolbar: [[{ 'header': [1, 2, 3, false] }], ['bold', 'italic', 'underline'], [{ 'list': 'ordered'}, { 'list': 'bullet' }], ['link', 'image'], ['clean']] },
+                            placeholder: 'Paste from Google Docs here...'
+                        });
+                        quillInstance.current.root.innerHTML = form.content[activeLang] || '';
+                        quillInstance.current.on('text-change', () => {
+                            const html = quillInstance.current.root.innerHTML;
+                            setForm(prev => ({ ...prev, content: { ...prev.content, [activeLang]: html } }));
+                        });
+                    }
+                }, []);
+
+                useEffect(() => {
+                    if (quillInstance.current) {
+                        const currentHtml = quillInstance.current.root.innerHTML;
+                        const targetHtml = form.content[activeLang] || '';
+                        if (currentHtml !== targetHtml) quillInstance.current.root.innerHTML = targetHtml;
+                    }
+                }, [activeLang]);
+
+                const handleSave = async () => {
+                    const dbPayload = {
+                        category: form.category,
+                        status: 'Published',
+                        source: form.source,
+                        read_time: form.read_time,
+                        title_en: form.title.en,
+                        title_nl: form.title.nl,
+                        desc_en: form.desc.en,
+                        desc_nl: form.desc.nl,
+                        content_en: form.content.en,
+                        content_nl: form.content.nl
+                    };
+
+                    let res;
+                    if (form.id) {
+                        res = await supabase.from('articles').update(dbPayload).eq('id', form.id);
+                    } else {
+                        res = await supabase.from('articles').insert([dbPayload]);
+                    }
+
+                    if (!res.error) {
+                        fetchData();
+                        setView('list');
+                    }
+                };
+
+                return (
+                    <div className="p-8 animate-slide-in max-w-6xl">
+                        <div className="flex justify-between items-center mb-10">
+                            <button onClick={() => setView('list')} className="flex items-center gap-2 text-slate-400 font-bold hover:text-slate-900 transition"><ArrowLeft size={16} /> Back</button>
+                            <button onClick={handleSave} className="bg-blue-900 text-white px-8 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-800 transition shadow-lg shadow-blue-900/20"><Save size={18} /> Save Article</button>
+                        </div>
+                        <div className="grid grid-cols-4 gap-8">
+                            <div className="col-span-3 space-y-6">
+                                <div className="bg-white p-10 rounded-[2.5rem] border border-slate-200">
+                                    <div className="flex items-center justify-between mb-8">
+                                        <h2 className="text-xl font-black">Editor</h2>
+                                        <div className="flex bg-slate-100 p-1 rounded-xl">
+                                            {['en', 'nl'].map(l => (
+                                                <button key={l} onClick={() => setActiveLang(l)} className={`px-5 py-2 rounded-lg text-xs font-black uppercase transition ${activeLang === l ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>{l}</button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-6">
+                                        <input className="form-input text-xl font-extrabold" value={form.title[activeLang]} onChange={e => setForm({...form, title: {...form.title, [activeLang]: e.target.value}})} placeholder="Headline..." />
+                                        <textarea className="form-input h-20 text-sm font-medium" value={form.desc[activeLang]} onChange={e => setForm({...form, desc: {...form.desc, [activeLang]: e.target.value}})} placeholder="Summary..." />
+                                        <div ref={editorRef}></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-span-1 space-y-6">
+                                <div className="bg-white p-6 rounded-3xl border border-slate-200 sticky top-24">
+                                    <h3 className="text-xs font-black mb-6 uppercase tracking-widest text-slate-400">Settings</h3>
+                                    <div className="space-y-4">
+                                        <select className="form-input text-sm" value={form.category} onChange={e => setForm({...form, category: e.target.value})}><option value="subsidy">Subsidy</option><option value="regulation">Regulation</option><option value="innovation">Innovation</option></select>
+                                        <input className="form-input text-sm" value={form.source} onChange={e => setForm({...form, source: e.target.value})} placeholder="Source..." />
+                                        <input className="form-input text-sm" value={form.read_time} onChange={e => setForm({...form, read_time: e.target.value})} placeholder="Read Time..." />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            );
+                );
+            };
 
             return (
                 <div className="flex min-h-screen">
                     <Sidebar />
                     <main className="flex-grow bg-slate-50/50 overflow-y-auto h-screen">
-                        {activeTab === 'subscribers' ? <SubscribersListView /> : <ArticleListView />}
+                        {activeTab === 'subscribers' ? (
+                            <div className="p-8 animate-slide-in">
+                                <h1 className="text-3xl font-black mb-8 text-slate-900">Subscribers</h1>
+                                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                                    <table className="w-full text-left">
+                                        <thead className="bg-slate-50/50 text-[10px] font-black uppercase text-slate-400"><tr className="border-b"><th className="px-8 py-4">Email</th><th className="px-8 py-4">Joined</th></tr></thead>
+                                        <tbody className="divide-y divide-slate-50">
+                                            {subscribers.map(sub => (<tr key={sub.id} className="hover:bg-slate-50/50"><td className="px-8 py-5 font-bold text-sm text-slate-900">{sub.email}</td><td className="px-8 py-5 text-xs text-slate-400">{new Date(sub.joined_at).toLocaleDateString()}</td></tr>))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        ) : (view === 'list' ? <ArticleListView /> : <ArticleEditor />)}
                     </main>
                 </div>
             );
