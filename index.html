@@ -427,7 +427,7 @@
                     },
                     // Choice View Content
                     choice: {
-                        title: "Welcome aboard,",
+                        title: "Welkom aan boord,",
                         subtitle: "Wat is uw belangrijkste doel vandaag?",
                         card1_title: "Subsidie Zoeker",
                         card1_desc: "Scan uw aankopen en vind niet-geclaimd overheidsgeld (SEBA, MIA, SLIM).",
@@ -1139,7 +1139,7 @@
                         {/* Desktop Nav */}
                         <div className="hidden md:flex items-center space-x-8">
                         <a href="#roles" className="text-gray-600 hover:text-blue-600 font-medium">{t.nav.solutions}</a>
-                        <a href="news.html" className="text-gray-600 hover:text-blue-600 font-medium">{t.nav.news}</a>
+                        <a href="#news" className="text-gray-600 hover:text-blue-600 font-medium">{t.nav.news}</a>
                         <a href="#subsidyroadmap" className="text-gray-600 hover:text-blue-600 font-medium">{t.nav.subsidy_guide}</a>
                         <button 
                             onClick={() => setLang(lang === 'en' ? 'nl' : 'en')}
@@ -1172,7 +1172,7 @@
                     {mobileMenuOpen && (
                     <div className="md:hidden bg-white border-t p-4 space-y-4">
                         <a href="#roles" className="block text-gray-600 font-medium">{t.nav.solutions}</a>
-                        <a href="news.html" className="block text-gray-600 font-medium">{t.nav.news}</a>
+                        <a href="#news" className="block text-gray-600 font-medium">{t.nav.news}</a>
                         <a href="#contact" className="block text-blue-600 font-bold">{t.nav.contact}</a>
                     </div>
                     )}
