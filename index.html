@@ -11,6 +11,9 @@
     <!-- Babel for JSX (Standalone) -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         /* Custom Animations */
         @keyframes fadeIn {
@@ -36,7 +39,7 @@
       to work directly in the browser via Babel. This solves the UMD dependency issues.
     -->
     <script type="text/babel" data-type="module">
-        import React, { useState } from 'https://esm.sh/react@18.2.0';
+        import React, { useState, useEffect } from 'https://esm.sh/react@18.2.0';
         import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
         
         // Import Lucide Icons directly from esm.sh
@@ -69,6 +72,31 @@
             });
 
             const [formSubmitted, setFormSubmitted] = useState(false);
+
+            // Supabase State
+            const [dbArticles, setDbArticles] = useState([]);
+
+            // Initialize Supabase
+            const SUPABASE_URL = 'https://byomcvqnuhpeazicirjg.supabase.co';
+            const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5b21jdnFudWhwZWF6aWNpcmpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MjMxNzMsImV4cCI6MjA4MjI5OTE3M30.Bl5sahKsZ4nX0iiPT9tKmXm_Pq3bfAjLLiVYeS3oA2g';
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+            // Fetch articles from Supabase on load
+            useEffect(() => {
+                const fetchNews = async () => {
+                    const { data, error } = await supabase
+                        .from('articles')
+                        .select('*')
+                        .eq('status', 'Published')
+                        .order('created_at', { ascending: false })
+                        .limit(3);
+                    
+                    if (!error && data) {
+                        setDbArticles(data);
+                    }
+                };
+                fetchNews();
+            }, []);
 
             // Subsidy Tool State
             const [subsidyStep, setSubsidyStep] = useState(1);
@@ -138,21 +166,21 @@
                                 date: "12 Oct 2024",
                                 source: "RVO.nl",
                                 desc: "The budget for electric commercial vehicles (SEBA) is 85% full. Apply before it's too late.",
-                                link: "#"
+                                link: "news.html"
                             },
                             {
                                 title: "New VSME Reporting Standards",
                                 date: "05 Nov 2024",
                                 source: "EFRAG",
                                 desc: "Banks will require the new simplified ESG report (VSME) for loans above €50k starting 2025.",
-                                link: "#"
+                                link: "news.html"
                             },
                             {
                                 title: "MIA/Vamil List 2025 Updates",
                                 date: "01 Dec 2024",
                                 source: "Belastingdienst",
                                 desc: "New categories for hydrogen equipment and battery recycling added to the tax relief list.",
-                                link: "#"
+                                link: "news.html"
                             }
                         ]
                     },
@@ -290,21 +318,21 @@
                                 date: "12 Okt 2024",
                                 source: "RVO.nl",
                                 desc: "Het budget voor elektrische bestelauto's (SEBA) is voor 85% benut. Vraag aan voordat het te laat is.",
-                                link: "#"
+                                link: "news.html"
                             },
                             {
                                 title: "Nieuwe VSME Rapportage Normen",
                                 date: "05 Nov 2024",
                                 source: "EFRAG",
                                 desc: "Banken eisen vanaf 2025 de nieuwe vereenvoudigde ESG-rapportage (VSME) voor leningen boven €50k.",
-                                link: "#"
+                                link: "news.html"
                             },
                             {
                                 title: "MIA/Vamil Lijst 2025 Updates",
                                 date: "01 Dec 2024",
                                 source: "Belastingdienst",
                                 desc: "Nieuwe categorieën voor waterstofapparatuur en batterijrecycling toegevoegd aan de lijst.",
-                                link: "#"
+                                link: "news.html"
                             }
                         ]
                     },
@@ -399,7 +427,7 @@
                     },
                     // Choice View Content
                     choice: {
-                        title: "Welkom aan boord,",
+                        title: "Welcome aboard,",
                         subtitle: "Wat is uw belangrijkste doel vandaag?",
                         card1_title: "Subsidie Zoeker",
                         card1_desc: "Scan uw aankopen en vind niet-geclaimd overheidsgeld (SEBA, MIA, SLIM).",
@@ -414,15 +442,68 @@
             const t = content[lang];
             const tt = content[lang].tool;
 
+            const opportunities = {
+                garage_owner: [
+                    { id: 1, icon: <Euro className="w-8 h-8 text-yellow-500" />, title: { en: "Subsidy Radar", nl: "Subsidie Radar" }, pain: { en: "Collect money left on the table.", nl: "Geld van tafel rapen." }, desc: { en: "Scans monthly purchases for eligibility. Notification: 'You qualify for €2000 subsidy, click to claim'.", nl: "Scant maandelijkse aankopen. Melding: 'U komt in aanmerking voor €2000 subsidie, klik om te claimen'." }, tag: { en: "Cash-back", nl: "Cash-back" } },
+                    { id: 2, icon: <ShieldCheck className="w-8 h-8 text-green-500" />, title: { en: "Compliance Health", nl: "Compliance Gezondheid" }, pain: { en: "Fear of fines and shutdowns.", nl: "Angst voor boetes en sluiting." }, desc: { en: "Visual dashboard for permits, licenses (APK), and insurance status. Stop worrying about fines.", nl: "Visueel dashboard voor vergunningen, licenties (APK) en verzekeringen. Geen zorgen meer over boetes." }, tag: { en: "Risk Free", nl: "Risicovrij" } },
+                    { id: 3, icon: <FileBarChart className="w-8 h-8 text-blue-500" />, title: { en: "Auto-VSME Report", nl: "Auto-VSME Rapport" }, pain: { en: "Bank loan paperwork headaches.", nl: "Hoofdpijn van bankpapieren." }, desc: { en: "One-click PDF generation of energy and purchase data for banks or leasing companies.", nl: "Genereer met één klik een PDF van energie- en inkoopdata voor banken of leasemaatschappijen." }, tag: { en: "Credit", nl: "Krediet" } },
+                    { id: 4, icon: <PieChart className="w-8 h-8 text-purple-500" />, title: { en: "Real Profit Check", nl: "Winst Checker" }, pain: { en: "Guessing which repair makes money.", nl: "Gokken welke reparatie geld oplevert." }, desc: { en: "See net profit per bay or mechanic. Data-driven decisions to cut low-margin work.", nl: "Zie nettowinst per brug of monteur. Datagestuurde beslissingen om onrendabel werk te schrappen." }, tag: { en: "Insight", nl: "Inzicht" } }
+                ],
+                advisor: [
+                    { id: 5, icon: <Video className="w-8 h-8 text-blue-600" />, title: { en: "Visual Quote", nl: "Visuele Offerte" }, pain: { en: "Winning customer trust instantly.", nl: "Direct klantvertrouwen winnen." }, desc: { en: "Send a 15s mechanic video to WhatsApp with a price and 'Approve' button. Increase upsell by 30%.", nl: "Stuur een 15s video naar WhatsApp met prijs en 'Akkoord' knop. Verhoog upsell met 30%." }, tag: { en: "Trust", nl: "Vertrouwen" } },
+                    { id: 6, icon: <Database className="w-8 h-8 text-indigo-600" />, title: { en: "ROB-Bot", nl: "ROB-Bot" }, pain: { en: "Lease portal complexity.", nl: "Complexiteit van leaseportalen." }, desc: { en: "Hides ROB-Net complexity. Tracks approval status in real-time. Free up your phone line.", nl: "Verbergt ROB-Net complexiteit. Volgt goedkeuringsstatus in realtime. Houd uw telefoonlijn vrij." }, tag: { en: "Time", nl: "Tijd" } },
+                    { id: 7, icon: <CheckCircle className="w-8 h-8 text-green-600" />, title: { en: "Customer Green Card", nl: "Klant Groene Kaart" }, pain: { en: "Customer loyalty retention.", nl: "Klantbehoud." }, desc: { en: "Beautiful report for the client: 'You saved 50kg CO2 by repairing'. A powerful marketing tool.", nl: "Mooi rapport voor de klant: 'U heeft 50kg CO2 bespaard'. Een krachtige marketingtool." }, tag: { en: "Marketing", nl: "Marketing" } },
+                    { id: 8, icon: <HelpCircle className="w-8 h-8 text-orange-500" />, title: { en: "QA Assist", nl: "Vraagbaak Assistent" }, pain: { en: "Explaining technical needs.", nl: "Technische noodzaak uitleggen." }, desc: { en: "Quick simplified technical data to explain why a part needs replacement.", nl: "Snelle vereenvoudigde technische data om uit te leggen waarom een onderdeel vervangen moet worden." }, tag: { en: "Professional", nl: "Professioneel" } }
+                ],
+                mechanic: [
+                    { id: 9, icon: <Mic className="w-8 h-8 text-red-500" />, title: { en: "Voice-to-Text Log", nl: "Spraak-Logboek" }, pain: { en: "Typing with greasy hands.", nl: "Typen met vette handen." }, desc: { en: "Record repair notes by voice. AI converts it to technical text in the car file. Goodbye keyboard.", nl: "Spreek reparatienotities in. AI zet het om naar technische tekst in het dossier. Vaarwel toetsenbord." }, tag: { en: "Hands-free", nl: "Hands-free" } },
+                    { id: 10, icon: <QrCode className="w-8 h-8 text-blue-500" />, title: { en: "Just-in-Time Learning", nl: "Direct Leren" }, pain: { en: "Breaking expensive parts.", nl: "Dure onderdelen breken." }, desc: { en: "Scan QR on car/part to watch a 3-min specific install video. Prevent errors.", nl: "Scan QR op auto/onderdeel voor een specifieke 3-min installatievideo. Voorkom fouten." }, tag: { en: "Safety", nl: "Veiligheid" } },
+                    { id: 11, icon: <Smartphone className="w-8 h-8 text-purple-500" />, title: { en: "Remote Expert", nl: "Expert op Afstand" }, pain: { en: "Stuck on complex issues.", nl: "Vastlopen op complexe problemen." }, desc: { en: "Help button opens camera. Remote expert draws on screen to guide you.", nl: "Hulpknop opent camera. Expert tekent op scherm om u te begeleiden." }, tag: { en: "Support", nl: "Ondersteuning" } },
+                    { id: 12, icon: <ListChecks className="w-8 h-8 text-green-500" />, title: { en: "Smart Checklist", nl: "Slimme Checklist" }, pain: { en: "Forgetting steps during APK.", nl: "Stappen vergeten tijdens APK." }, desc: { en: "Digital checklist with large touch buttons. Faster work, zero forgotten bolts.", nl: "Digitale checklist met grote aanraakknoppen. Sneller werken, geen vergeten bouten." }, tag: { en: "Speed", nl: "Snelheid" } }
+                ],
+                warehouse: [
+                    { id: 13, icon: <RefreshCw className="w-8 h-8 text-red-600" />, title: { en: "Core Bounty Hunter", nl: "Statiegeld Jager" }, pain: { en: "Losing money on returns.", nl: "Geld verliezen op retouren." }, desc: { en: "Dashboard turns red: 'Return Part X by tomorrow or lose €50'. Stop revenue leakage.", nl: "Dashboard wordt rood: 'Stuur Onderdeel X morgen terug of verlies €50'. Stop inkomstenlekkage." }, tag: { en: "Profit", nl: "Winst" } },
+                    { id: 14, icon: <Barcode className="w-8 h-8 text-blue-600" />, title: { en: "Part Matcher Scanner", nl: "Onderdeel Matcher" }, pain: { en: "Wrong parts delivered.", nl: "Verkeerde onderdelen geleverd." }, desc: { en: "Scan barcode upon arrival. Instant beep if it doesn't match the order. Reduce car downtime.", nl: "Scan barcode bij aankomst. Directe piep als het niet matcht. Verminder stiltstand." }, tag: { en: "Accuracy", nl: "Precisie" } },
+                    { id: 15, icon: <Grid className="w-8 h-8 text-orange-600" />, title: { en: "Tire Hotel Map", nl: "Bandenhotel Kaart" }, pain: { en: "Lost tires in warehouse.", nl: "Banden kwijt in magazijn." }, desc: { en: "Visual map showing exact location of customer tires + alerts for worn tires (Sales lead).", nl: "Visuele kaart met exacte locatie van klantbanden + meldingen voor versleten banden (Verkoopkans)." }, tag: { en: "Organized", nl: "Georganiseerd" } }
+                ],
+                financial: [
+                    { id: 16, icon: <RefreshCw className="w-8 h-8 text-blue-600" />, title: { en: "Auto-Sync", nl: "Auto-Sync" }, pain: { en: "Manual data entry hate.", nl: "Haat aan handmatige invoer." }, desc: { en: "Connects all operations (parts, hours) to SnelStart/Exact. No more manual entry.", nl: "Verbindt alle operaties (onderdelen, uren) met SnelStart/Exact. Geen handmatige invoer meer." }, tag: { en: "Automation", nl: "Automatisering" } },
+                    { id: 17, icon: <Trash2 className="w-8 h-8 text-green-600" />, title: { en: "Digital Waste Log", nl: "Digitaal Afval Log" }, pain: { en: "Environmental audit stress.", nl: "Stress voor milieu-audit." }, desc: { en: "Digital archive of all disposal receipts. Always Audit Ready for inspectors.", nl: "Digitaal archief van alle afvoerbewijzen. Altijd Audit Ready voor inspecteurs." }, tag: { en: "Compliance", nl: "Naleving" } },
+                    { id: 18, icon: <Receipt className="w-8 h-8 text-purple-600" />, title: { en: "Purchase Match", nl: "Inkoop Match" }, pain: { en: "Missing invoices.", nl: "Ontbrekende facturen." }, desc: { en: "Auto-match LKQ purchase invoices with parts used on customer cars. Zero leakage.", nl: "Match automatisch LKQ-inkoopfacturen met gebruikte onderdelen. Nul lekkage." }, tag: { en: "Control", nl: "Controle" } }
+                ]
+            };
+
             const handleRoleSelect = (role) => {
                 setActiveRole(role);
                 setTimeout(() => { document.getElementById('solutions-section')?.scrollIntoView({ behavior: 'smooth' }); }, 100);
             };
 
-            const handleFormSubmit = (e) => {
+            // --- SUPABASE FORM SUBMISSION ---
+            const handleFormSubmit = async (e) => {
                 e.preventDefault();
+                
+                const finalRole = formData.role === 'other' ? formData.customRole : formData.role;
+
+                // Insert into Supabase 'leads' table
+                const { error } = await supabase
+                    .from('leads')
+                    .insert([
+                        {
+                            full_name: formData.name,
+                            email: formData.email,
+                            company_name: formData.company,
+                            city: formData.city,
+                            user_role: finalRole,
+                            newsletter_opt_in: formData.newsletter
+                        }
+                    ]);
+
+                if (error) {
+                    console.error("Supabase Error:", error.message);
+                    // In a real app, you might show a small toast here. Proceeding for MVP.
+                }
+
                 setFormSubmitted(true);
-                // Redirect to Choice View instead of directly to Subsidy Tool
                 setTimeout(() => {
                     setCurrentView('choice'); 
                     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -438,79 +519,12 @@
                 });
             };
 
-            // Helper to determine next step from step 3 (Now goes to results)
             const nextFromStep3 = () => {
                 if (subsidyData.categories.length === 0) return alert("Select at least one.");
-                setSubsidyStep(5); // Skip old step 4, go straight to results (now id 5)
+                setSubsidyStep(5);
             };
 
-            // Helper to determine subsidies in Step 5
-            const calculateSubsidies = () => {
-                const results = [];
-                // Logic for MIA
-                if ((subsidyData.categories.includes('ev') && subsidyData.invoiceValue) || 
-                    (subsidyData.categories.includes('building'))) {
-                    results.push({ type: 'mia', title: tt.step5.card_mia, desc: tt.step5.card_mia_desc });
-                }
-                // Logic for SEBA
-                if (subsidyData.categories.includes('fleet') && subsidyData.isElectricVehicle && subsidyData.isHeavyVehicle) {
-                    results.push({ type: 'seba', title: tt.step5.card_seba, desc: tt.step5.card_seba_desc });
-                }
-                // Logic for SLIM
-                if (subsidyData.categories.includes('training') && subsidyData.smallStaff) {
-                    results.push({ type: 'slim', title: tt.step5.card_slim, desc: tt.step5.card_slim_desc });
-                }
-                
-                // Fallback if no specific logic met but category selected (Generic potential)
-                if (results.length === 0 && subsidyData.categories.length > 0) {
-                    results.push({ type: 'mia', title: tt.step5.card_mia, desc: tt.step5.card_mia_desc });
-                }
-                return results;
-            };
-
-            // VSME Logic
-            const handleVsmeChange = (field, value) => {
-                setVsmeData(prev => ({ ...prev, [field]: value }));
-            };
-
-            const startVsmeApp = () => {
-                if (vsmeData.isListed === 'yes') {
-                    alert("Since you are listed, this VSME tool is not sufficient. Please use ESRS LSME standards.");
-                    return;
-                }
-                
-                const isBP = vsmeData.reportPurpose === 'partner';
-                const isComp = vsmeData.hasPolicies === 'yes';
-                setVsmeConfig({ listed: false, bpModule: isBP, comprehensive: isComp });
-
-                // Define steps
-                const steps = ['gen', 'env', 'soc', 'gov'];
-                if (isBP) steps.push('bp');
-                if (isComp) steps.push('c1', 'c2');
-                steps.push('generate');
-                
-                setVsmeStepsList(steps);
-                setVsmeView('wizard');
-                setVsmeStepIndex(0);
-                window.scrollTo(0,0);
-            };
-
-            const fillFakeVsmeData = () => {
-                setVsmeData(prev => ({
-                    ...prev,
-                    b1_name: "AutoParts NL B.V.", b1_basis: "Individual basis", b1_legal_form: "B.V.", b1_nace: "45.31", b1_country: "Netherlands", b1_turnover: "12500000", b1_employees: "45",
-                    b2_practices: "Installation of LED lighting and consolidation of shipments to reduce CO2 per delivery.",
-                    b3_energy_total: "480", b3_energy_ren: "480", b3_energy_nonren: "0", b3_scope1: "48.5", b3_scope2: "0",
-                    b4_pollution: "None", b5_sensitive: "0", b6_water: "450", b7_waste_haz: "0.2", b7_waste_recycled: "12",
-                    b8_perm: "35", b8_temp: "10", b8_female: "16", b9_accidents: "1", b10_minwage: "Yes",
-                    b11_convictions: "0", b11_fines: "0",
-                    bp_code: "Yes", bp_grievance: "Yes", bp_payment: "30 days", bp_excluded_rev: "0%", bp_scope3_status: "Estimated", bp_climate_risks: "Physical risk: Heat (Low).",
-                    c1_strategy: "Focus on EV parts.", c2_policies: "HSE committee reports to Board.", c3_targets: "Scope 1 -50% by 2030.", c4_risks: "Flooding risk (Low).",
-                    c5_mgmt_gender: "40% Female", c6_policy: "Yes", c7_incidents: "None", c8_revenue: "0%", c9_board_gender: "25% Female"
-                }));
-            };
-
-            // --- RENDER FUNCTIONS ---
+            // --- RENDER HELPERS ---
 
             const renderChoiceSection = () => {
                 return (
@@ -1337,19 +1351,28 @@
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-8">
-                        {t.news.items.map((item, idx) => (
-                        <div key={idx} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition flex flex-col h-full">
-                            <div className="flex justify-between items-start mb-4">
-                            <span className="text-xs font-bold bg-blue-100 text-blue-800 px-2 py-1 rounded">{item.source}</span>
-                            <span className="text-xs text-gray-400">{item.date}</span>
-                            </div>
-                            <h3 className="font-bold text-lg text-gray-900 mb-2">{item.title}</h3>
-                            <p className="text-gray-600 text-sm flex-grow mb-4">{item.desc}</p>
-                            <a href={item.link} className="text-blue-600 text-sm font-bold flex items-center gap-1 hover:underline mt-auto">
-                            {t.news.read_more} <ExternalLink className="w-3 h-3" />
-                            </a>
-                        </div>
-                        ))}
+                        {(dbArticles.length > 0 ? dbArticles : t.news.items).map((item, idx) => {
+                             const isDb = !!item.created_at;
+                             const title = isDb ? (lang === 'en' ? item.title_en : item.title_nl) : item.title;
+                             const desc = isDb ? (lang === 'en' ? item.desc_en : item.desc_nl) : item.desc;
+                             const date = isDb ? new Date(item.created_at).toLocaleDateString() : item.date;
+                             const link = "news.html";
+
+                             return (
+                                <div key={idx} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition flex flex-col h-full relative group">
+                                    <a href={link} className="absolute inset-0 z-10"></a>
+                                    <div className="flex justify-between items-start mb-4">
+                                    <span className="text-xs font-bold bg-blue-100 text-blue-800 px-2 py-1 rounded relative z-20">{item.source}</span>
+                                    <span className="text-xs text-gray-400">{date}</span>
+                                    </div>
+                                    <h3 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">{title}</h3>
+                                    <p className="text-gray-600 text-sm flex-grow mb-4 line-clamp-3">{desc}</p>
+                                    <div className="text-blue-600 text-sm font-bold flex items-center gap-1 hover:underline mt-auto">
+                                    {t.news.read_more} <ExternalLink className="w-3 h-3" />
+                                    </div>
+                                </div>
+                             );
+                        })}
                     </div>
                     </div>
                 </div>
