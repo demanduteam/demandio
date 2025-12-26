@@ -81,9 +81,9 @@
             const handleEdit = (article) => {
                 setSelectedArticle({
                     ...article,
-                    title: { en: article.title_en, nl: article.title_nl },
-                    desc: { en: article.desc_en, nl: article.desc_nl },
-                    content: { en: article.content_en, nl: article.content_nl }
+                    title: { en: article.title_en || '', nl: article.title_nl || '' },
+                    desc: { en: article.desc_en || '', nl: article.desc_nl || '' },
+                    content: { en: article.content_en || '', nl: article.content_nl || '' }
                 });
                 setView('edit');
             };
@@ -127,8 +127,8 @@
                             <tbody className="divide-y divide-slate-50">
                                 {articles.map(art => (
                                     <tr key={art.id} className="hover:bg-slate-50/50 transition-colors">
-                                        <td className="px-8 py-5 font-bold text-slate-900 text-sm">{art.title_en}</td>
-                                        <td className="px-8 py-5 uppercase text-[10px] font-black text-slate-400">{art.category}</td>
+                                        <td className="px-8 py-5"><p className="font-bold text-slate-900 text-sm">{art.title_en || 'Untitled'}</p></td>
+                                        <td className="px-8 py-5"><span className="px-2 py-1 bg-slate-100 rounded text-[10px] font-black uppercase text-slate-500">{art.category}</span></td>
                                         <td className="px-8 py-5"><span className={`text-[10px] font-black uppercase ${art.status === 'Published' ? 'text-green-500' : 'text-orange-400'}`}>{art.status}</span></td>
                                         <td className="px-8 py-5 text-right flex justify-end gap-2">
                                             <button onClick={() => handleEdit(art)} className="p-2 text-slate-300 hover:text-blue-600 transition"><Edit2 size={16} /></button>
@@ -145,29 +145,47 @@
             const ArticleEditor = () => {
                 const [form, setForm] = useState(selectedArticle);
                 const [activeLang, setActiveLang] = useState('en');
+                
+                // Refs to avoid stale closures in Quill event listeners
+                const activeLangRef = useRef(activeLang);
                 const editorRef = useRef(null);
                 const quillInstance = useRef(null);
+
+                // Keep ref updated when activeLang changes
+                useEffect(() => {
+                    activeLangRef.current = activeLang;
+                }, [activeLang]);
 
                 useEffect(() => {
                     if (editorRef.current && !quillInstance.current) {
                         quillInstance.current = new Quill(editorRef.current, {
                             theme: 'snow',
                             modules: { toolbar: [[{ 'header': [1, 2, 3, false] }], ['bold', 'italic', 'underline'], [{ 'list': 'ordered'}, { 'list': 'bullet' }], ['link', 'image'], ['clean']] },
-                            placeholder: 'Paste from Google Docs here...'
+                            placeholder: 'Paste content here...'
                         });
+                        
                         quillInstance.current.root.innerHTML = form.content[activeLang] || '';
+                        
                         quillInstance.current.on('text-change', () => {
                             const html = quillInstance.current.root.innerHTML;
-                            setForm(prev => ({ ...prev, content: { ...prev.content, [activeLang]: html } }));
+                            const currentLang = activeLangRef.current;
+                            
+                            setForm(prev => ({ 
+                                ...prev, 
+                                content: { ...prev.content, [currentLang]: html } 
+                            }));
                         });
                     }
                 }, []);
 
+                // Update content visually in the editor when language switch button is clicked
                 useEffect(() => {
                     if (quillInstance.current) {
                         const currentHtml = quillInstance.current.root.innerHTML;
                         const targetHtml = form.content[activeLang] || '';
-                        if (currentHtml !== targetHtml) quillInstance.current.root.innerHTML = targetHtml;
+                        if (currentHtml !== targetHtml) {
+                            quillInstance.current.root.innerHTML = targetHtml;
+                        }
                     }
                 }, [activeLang]);
 
@@ -186,7 +204,7 @@
                     };
 
                     let res;
-                    if (form.id) {
+                    if (form.id && typeof form.id === 'string') {
                         res = await supabase.from('articles').update(dbPayload).eq('id', form.id);
                     } else {
                         res = await supabase.from('articles').insert([dbPayload]);
@@ -195,6 +213,8 @@
                     if (!res.error) {
                         fetchData();
                         setView('list');
+                    } else {
+                        console.error("Save error:", res.error);
                     }
                 };
 
@@ -202,7 +222,7 @@
                     <div className="p-8 animate-slide-in max-w-6xl">
                         <div className="flex justify-between items-center mb-10">
                             <button onClick={() => setView('list')} className="flex items-center gap-2 text-slate-400 font-bold hover:text-slate-900 transition"><ArrowLeft size={16} /> Back</button>
-                            <button onClick={handleSave} className="bg-blue-900 text-white px-8 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-800 transition shadow-lg shadow-blue-900/20"><Save size={18} /> Save Article</button>
+                            <button onClick={handleSave} className="bg-blue-900 text-white px-8 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-800 transition shadow-lg"><Save size={18} /> Save Article</button>
                         </div>
                         <div className="grid grid-cols-4 gap-8">
                             <div className="col-span-3 space-y-6">
@@ -216,8 +236,24 @@
                                         </div>
                                     </div>
                                     <div className="space-y-6">
-                                        <input className="form-input text-xl font-extrabold" value={form.title[activeLang]} onChange={e => setForm({...form, title: {...form.title, [activeLang]: e.target.value}})} placeholder="Headline..." />
-                                        <textarea className="form-input h-20 text-sm font-medium" value={form.desc[activeLang]} onChange={e => setForm({...form, desc: {...form.desc, [activeLang]: e.target.value}})} placeholder="Summary..." />
+                                        <div>
+                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Headline ({activeLang})</label>
+                                            <input 
+                                                className="form-input text-xl font-extrabold" 
+                                                value={form.title[activeLang]} 
+                                                onChange={e => setForm({...form, title: {...form.title, [activeLang]: e.target.value}})} 
+                                                placeholder="Enter headline..." 
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Summary ({activeLang})</label>
+                                            <textarea 
+                                                className="form-input h-20 text-sm font-medium" 
+                                                value={form.desc[activeLang]} 
+                                                onChange={e => setForm({...form, desc: {...form.desc, [activeLang]: e.target.value}})} 
+                                                placeholder="Enter short summary..." 
+                                            />
+                                        </div>
                                         <div ref={editorRef}></div>
                                     </div>
                                 </div>
@@ -226,9 +262,22 @@
                                 <div className="bg-white p-6 rounded-3xl border border-slate-200 sticky top-24">
                                     <h3 className="text-xs font-black mb-6 uppercase tracking-widest text-slate-400">Settings</h3>
                                     <div className="space-y-4">
-                                        <select className="form-input text-sm" value={form.category} onChange={e => setForm({...form, category: e.target.value})}><option value="subsidy">Subsidy</option><option value="regulation">Regulation</option><option value="innovation">Innovation</option></select>
-                                        <input className="form-input text-sm" value={form.source} onChange={e => setForm({...form, source: e.target.value})} placeholder="Source..." />
-                                        <input className="form-input text-sm" value={form.read_time} onChange={e => setForm({...form, read_time: e.target.value})} placeholder="Read Time..." />
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase block mb-1">Category</label>
+                                            <select className="form-input text-sm" value={form.category} onChange={e => setForm({...form, category: e.target.value})}>
+                                                <option value="subsidy">Subsidy</option>
+                                                <option value="regulation">Regulation</option>
+                                                <option value="innovation">Innovation</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase block mb-1">Source</label>
+                                            <input className="form-input text-sm" value={form.source} onChange={e => setForm({...form, source: e.target.value})} placeholder="Source..." />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase block mb-1">Read Time</label>
+                                            <input className="form-input text-sm" value={form.read_time} onChange={e => setForm({...form, read_time: e.target.value})} placeholder="Read Time..." />
+                                        </div>
                                     </div>
                                 </div>
                             </div>

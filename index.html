@@ -504,9 +504,13 @@
                 }
 
                 setFormSubmitted(true);
+                // Redirect to the dedicated Tool Canvas
                 setTimeout(() => {
-                    setCurrentView('choice'); 
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    try {
+                        window.location.href = 'tool.html';
+                    } catch (e) {
+                        console.log("Redirect to tool.html blocked in preview. In production, this will navigate.");
+                    }
                 }, 1500);
             };
 
