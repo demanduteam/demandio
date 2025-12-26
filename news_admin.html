@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demandio Admin | Content Management 2026</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Babel for JSX (Standalone) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Quill Rich Text Editor Styles -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        .sidebar-item-active { background-color: #1e3a8a; color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .form-input { width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.75rem; outline: none; }
+        .ql-container { font-family: 'Inter', sans-serif !important; border-bottom-left-radius: 0.75rem; border-bottom-right-radius: 0.75rem; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useRef } from 'https://esm.sh/react@18.2.0';
+        import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
+        import { LayoutDashboard, Newspaper, Plus, Edit2, Users, Save, ArrowLeft } from 'https://esm.sh/lucide-react@0.292.0';
+
+        const App = () => {
+            const [view, setView] = useState('list'); 
+            const [activeTab, setActiveTab] = useState('articles');
+            const [selectedArticle, setSelectedArticle] = useState(null);
+            const [articles, setArticles] = useState([{ id: 1, category: 'subsidy', title: { en: "SEBA Subsidy Pot Closing Soon", nl: "SEBA Subsidiepot Bijna Leeg" }, status: 'Published', content: { en: '', nl: '' } }]);
+            const [subscribers] = useState([{ id: 1, name: "Jan Jansen", email: "jan@demandio.nl", date: "2026-01-10", company: "Garage Utrecht" }]);
+
+            const Sidebar = () => (
+                <aside className="w-64 bg-white border-r border-slate-200 h-screen sticky top-0 p-6 flex flex-col shadow-sm">
+                    <div className="flex items-center gap-2 mb-10">
+                        <div className="bg-blue-900 p-1.5 rounded-lg text-white"><LayoutDashboard size={20} /></div>
+                        <span className="font-black text-slate-900 text-lg tracking-tight">Demandio Admin</span>
+                    </div>
+                    <nav className="space-y-1 flex-grow">
+                        <button onClick={() => { setActiveTab('articles'); setView('list'); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition ${activeTab === 'articles' ? 'sidebar-item-active' : 'text-slate-400 hover:text-slate-900'}`}><Newspaper size={18} /> News Hub</button>
+                        <button onClick={() => { setActiveTab('subscribers'); setView('list'); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition ${activeTab === 'subscribers' ? 'sidebar-item-active' : 'text-slate-400 hover:text-slate-900'}`}><Users size={18} /> Subscribers</button>
+                    </nav>
+                    <div className="pt-6 border-t border-slate-100 text-[10px] text-slate-400 font-bold uppercase tracking-widest text-center">© 2026 Demandio</div>
+                </aside>
+            );
+
+            const ArticleListView = () => (
+                <div className="p-8"><h1 className="text-3xl font-black mb-8">Articles</h1>
+                    <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                        <table className="w-full text-left">
+                            <thead className="bg-slate-50/50 text-[10px] font-black uppercase text-slate-400"><tr className="border-b"><th className="px-8 py-4">Title</th><th className="px-8 py-4">Status</th></tr></thead>
+                            <tbody className="divide-y divide-slate-50">
+                                {articles.map(art => (<tr key={art.id} className="hover:bg-slate-50"><td className="px-8 py-5 font-bold text-sm">{art.title.en}</td><td className="px-8 py-5 text-[10px] uppercase font-black text-green-500">{art.status}</td></tr>))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+
+            const SubscribersListView = () => (
+                <div className="p-8"><h1 className="text-3xl font-black mb-8">Subscribers</h1>
+                    <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                        <table className="w-full text-left">
+                            <thead className="bg-slate-50/50 text-[10px] font-black uppercase text-slate-400"><tr className="border-b"><th className="px-8 py-4">Name</th><th className="px-8 py-4">Email</th><th className="px-8 py-4">Joined</th></tr></thead>
+                            <tbody className="divide-y divide-slate-50">
+                                {subscribers.map(sub => (<tr key={sub.id} className="hover:bg-slate-50"><td className="px-8 py-5 font-bold text-sm">{sub.name}</td><td className="px-8 py-5 text-sm text-slate-500">{sub.email}</td><td className="px-8 py-5 text-xs text-slate-400">{sub.date}</td></tr>))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+
+            return (
+                <div className="flex min-h-screen">
+                    <Sidebar />
+                    <main className="flex-grow bg-slate-50/50 overflow-y-auto h-screen">
+                        {activeTab === 'subscribers' ? <SubscribersListView /> : <ArticleListView />}
+                    </main>
+                </div>
+            );
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

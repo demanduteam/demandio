@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demandio News Hub | Industry Intelligence & Subsidy Alerts</title>
+    <meta name="description" content="Stay updated with the latest Dutch automotive industry news, subsidy alerts (SEBA, MIA/Vamil), and regulatory changes for garage owners.">
+    <meta name="keywords" content="SEBA subsidie, MIA Vamil 2025, garage nieuws, automotive regelgeving, Demandio">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://demandio.nl/news">
+    <meta property="og:title" content="Demandio News Hub | Industry Intelligence">
+    <meta property="og:description" content="Latest news and subsidy alerts for the Dutch automotive market.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Babel for JSX (Standalone) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+
+        /* Custom Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        /* --- TYPOGRAPHY ENGINE (Optimized for SEO & Readability) --- */
+        .article-body {
+            font-size: 1.15rem;
+            line-height: 1.85;
+            color: #334155;
+            max-width: 100%;
+        }
+        .article-body p { margin-bottom: 1.75rem; }
+        .article-body h1 { font-size: 2.5rem; font-weight: 900; margin: 3rem 0 1.5rem; color: #0f172a; letter-spacing: -0.025em; line-height: 1.1; }
+        .article-body h2 { font-size: 1.85rem; font-weight: 800; margin: 2.5rem 0 1.25rem; color: #0f172a; border-left: 4px solid #3b82f6; padding-left: 1rem; }
+        .article-body table { width: 100% !important; border-collapse: collapse; margin: 2.5rem 0; background: white; border-radius: 1rem; border: 1px solid #e2e8f0; }
+        .article-body table td, .article-body table th { padding: 14px 20px; border: 1px solid #e2e8f0; }
+        .article-body img { max-width: 100%; border-radius: 2rem; margin: 3rem 0; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect } from 'https://esm.sh/react@18.2.0';
+        import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
+        import { Car, Globe, ArrowLeft, ChevronRight, Share2, Bookmark } from 'https://esm.sh/lucide-react@0.292.0';
+
+        const App = () => {
+            const [lang, setLang] = useState('nl');
+            const [view, setView] = useState('hub'); 
+            const [selectedArticle, setSelectedArticle] = useState(null);
+
+            const articles = [
+                {
+                    id: 1,
+                    category: 'subsidy',
+                    date: '2024-10-12',
+                    isoDate: '2024-10-12T09:00:00+01:00',
+                    title: { en: "SEBA Subsidy Pot Closing Soon", nl: "SEBA Subsidiepot Bijna Leeg" },
+                    author: "Martijn de Vries",
+                    source: "RVO.nl",
+                    desc: { en: "The 2024 budget for electric commercial vehicles is nearing depletion.", nl: "Het budget voor 2024 voor elektrische bestelauto's is bijna op." },
+                    content: { en: `<h2>Update</h2><p>Budget almost gone.</p>`, nl: `<h2>Update</h2><p>Budget bijna op.</p>` }
+                }
+            ];
+
+            useEffect(() => {
+                if (view === 'detail' && selectedArticle) {
+                    document.title = `${selectedArticle.title[lang]} | Demandio Hub`;
+                } else {
+                    document.title = `Demandio News Hub | Industry Intelligence & Subsidy Alerts`;
+                }
+            }, [view, selectedArticle, lang]);
+
+            const handleReadArticle = (article) => {
+                setSelectedArticle(article);
+                setView('detail');
+                window.scrollTo(0,0);
+            };
+
+            return (
+                <div className="min-h-screen flex flex-col">
+                    <nav className="glass-nav fixed w-full z-50 transition-all h-16 flex items-center justify-between px-4">
+                        <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('hub')}>
+                            <Car className="text-blue-600 w-6 h-6" />
+                            <span className="text-xl font-bold">Demandio <span className="text-blue-600 text-xs uppercase font-black">Intelligence</span></span>
+                        </div>
+                        <button onClick={() => setLang(lang === 'en' ? 'nl' : 'en')} className="bg-slate-100 px-3 py-1 rounded-full text-[10px] font-black uppercase text-slate-600">{lang}</button>
+                    </nav>
+
+                    <main className="flex-grow pt-24 pb-20">
+                        {view === 'hub' ? (
+                            <div className="max-w-7xl mx-auto px-4 animate-fade-in">
+                                <h1 className="text-4xl font-black mb-12">Industry Updates</h1>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                                    {articles.map(art => (
+                                        <article key={art.id} onClick={() => handleReadArticle(art)} className="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all cursor-pointer group">
+                                            <span className="text-[10px] font-black uppercase text-blue-600 tracking-widest">{art.category}</span>
+                                            <h2 className="text-2xl font-extrabold mt-6 mb-6 leading-tight group-hover:text-blue-600 transition-colors">{art.title[lang]}</h2>
+                                            <p className="text-slate-400 text-sm leading-relaxed mb-8">{art.desc[lang]}</p>
+                                            <footer className="flex items-center justify-between pt-6 border-t border-slate-50">
+                                                <time className="text-[10px] font-black text-slate-300 uppercase">{art.date}</time>
+                                                <span className="text-blue-600 font-black text-[10px] uppercase flex items-center gap-1">Read More <ChevronRight size={14} /></span>
+                                            </footer>
+                                        </article>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="max-w-4xl mx-auto px-4 animate-fade-in">
+                                <button onClick={() => setView('hub')} className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-widest mb-12 hover:text-blue-600 transition"><ArrowLeft size={14} /> Back to Hub</button>
+                                <article>
+                                    <h1 className="text-4xl md:text-6xl font-black text-slate-900 leading-[1.1] mb-10 tracking-tight">{selectedArticle.title[lang]}</h1>
+                                    <div className="article-body" dangerouslySetInnerHTML={{ __html: selectedArticle.content[lang] }} />
+                                </article>
+                            </div>
+                        )}
+                    </main>
+
+                    <footer className="bg-white border-t border-slate-100 py-12 px-4">
+                        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center opacity-40">
+                            <div className="flex items-center gap-2"><Car size={16} /><span className="font-black text-sm uppercase tracking-tighter">Demandio News Hub</span></div>
+                            <p className="text-xs font-bold">© 2026 Demandio Automotive Intelligence. Built for SEO compliance.</p>
+                        </div>
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
