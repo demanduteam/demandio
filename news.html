@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Demandio News Hub | Industry Intelligence 2026</title>
+    <meta name="description" content="Stay updated with the latest Dutch automotive industry news, subsidy alerts (SEBA, MIA/Vamil), and regulatory changes for garage owners.">
+    <meta name="keywords" content="SEBA subsidie, MIA Vamil 2025, garage nieuws, automotive regelgeving, Demandio">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://demandio.nl/news">
+    <meta property="og:title" content="Demandio News Hub | Industry Intelligence">
+    <meta property="og:description" content="Latest news and subsidy alerts for the Dutch automotive market.">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,11 +28,25 @@
         .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .glass-nav { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
-        .article-body { font-size: 1.15rem; line-height: 1.85; color: #334155; max-width: 100%; }
+        
+        /* --- TYPOGRAPHY ENGINE --- */
+        .article-body {
+            font-size: 1.15rem;
+            line-height: 1.85;
+            color: #334155;
+            max-width: 100%;
+        }
         .article-body p { margin-bottom: 1.75rem; }
         .article-body h2 { font-size: 1.85rem; font-weight: 800; margin: 2.5rem 0 1.25rem; color: #0f172a; border-left: 4px solid #3b82f6; padding-left: 1rem; }
+        .article-body h3 { font-size: 1.4rem; font-weight: 700; margin: 2rem 0 1rem; color: #1e293b; }
+        .article-body ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1.5rem; }
+        .article-body li { margin-bottom: 0.5rem; }
         .article-body table { width: 100% !important; border-collapse: collapse; margin: 2.5rem 0; background: white; border-radius: 1rem; border: 1px solid #e2e8f0; }
         .article-body table td, .article-body table th { padding: 14px 20px; border: 1px solid #e2e8f0; }
+        .article-body table th { background-color: #f1f5f9; text-align: left; font-weight: 700; }
+        
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body>
@@ -33,18 +55,56 @@
     <script type="text/babel" data-type="module">
         import React, { useState, useEffect } from 'https://esm.sh/react@18.2.0';
         import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
-        import { Car, Globe, ArrowLeft, ChevronRight } from 'https://esm.sh/lucide-react@0.292.0';
+        import { Car, Globe, ArrowLeft, ChevronRight, Home } from 'https://esm.sh/lucide-react@0.292.0';
 
         // --- CONFIGURATION ---
         const SUPABASE_URL = 'https://byomcvqnuhpeazicirjg.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5b21jdnFudWhwZWF6aWNpcmpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MjMxNzMsImV4cCI6MjA4MjI5OTE3M30.Bl5sahKsZ4nX0iiPT9tKmXm_Pq3bfAjLLiVYeS3oA2g';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        // --- SAMPLE CONTENT ---
+        const SAMPLE_ARTICLE = {
+            id: 'sample-2026',
+            category: 'innovation',
+            status: 'Published',
+            created_at: new Date().toISOString(),
+            read_time: '5 min read',
+            author: 'Dr. J. Willems',
+            source: 'Ministerie I&W',
+            title_en: "Hydrogen Infrastructure Plan 2026: What Garages Need to Know",
+            title_nl: "Waterstof Infrastructuur Plan 2026: Wat Garages Moeten Weten",
+            desc_en: "The Dutch government has greenlit the 'H2-Mobility' subsidy for independent workshops.",
+            desc_nl: "De Nederlandse overheid heeft groen licht gegeven voor de 'H2-Mobiliteit' subsidie voor onafhankelijke werkplaatsen.",
+            content_en: `<h2>The H2 Transition</h2><p>Starting January 2026, the rollout of hydrogen vehicles is accelerating.</p>`,
+            content_nl: `<h2>De H2 Transitie</h2><p>Vanaf januari 2026 versnelt de uitrol van waterstofvoertuigen.</p>`
+        };
+
         const App = () => {
             const [lang, setLang] = useState('nl');
             const [view, setView] = useState('hub'); 
             const [selectedArticle, setSelectedArticle] = useState(null);
             const [articles, setArticles] = useState([]);
+
+            const ui = {
+                en: {
+                    hubTitle: "Industry Updates",
+                    hubSubtitle: "Real-time alerts on subsidies and automotive regulations in the Netherlands.",
+                    back: "Back to Hub",
+                    readMore: "Read More",
+                    loading: "Loading updates...",
+                    backHome: "Back to Home"
+                },
+                nl: {
+                    hubTitle: "Sector Updates",
+                    hubSubtitle: "Real-time alerts over subsidies en automotive regelgeving in Nederland.",
+                    back: "Terug naar Overzicht",
+                    readMore: "Lees meer",
+                    loading: "Updates laden...",
+                    backHome: "Terug naar Home"
+                }
+            };
+
+            const t = ui[lang];
 
             useEffect(() => {
                 fetchArticles();
@@ -56,8 +116,26 @@
                     .select('*')
                     .eq('status', 'Published')
                     .order('created_at', { ascending: false });
-                if (!error) setArticles(data);
+                
+                if (!error && data && data.length > 0) {
+                    setArticles(data);
+                } else {
+                    setArticles([SAMPLE_ARTICLE]);
+                }
             };
+
+            // SEO & Language Switch Sync
+            useEffect(() => {
+                if (view === 'detail' && selectedArticle) {
+                    const title = lang === 'en' ? selectedArticle.title_en : selectedArticle.title_nl;
+                    const desc = lang === 'en' ? selectedArticle.desc_en : selectedArticle.desc_nl;
+                    document.title = `${title} | Demandio Hub`;
+                    document.querySelector('meta[name="description"]')?.setAttribute("content", desc);
+                } else {
+                    document.title = `Demandio News Hub | Industry Intelligence 2026`;
+                    document.querySelector('meta[name="description"]')?.setAttribute("content", t.hubSubtitle);
+                }
+            }, [view, selectedArticle, lang]);
 
             const handleReadArticle = (article) => {
                 setSelectedArticle(article);
@@ -68,46 +146,95 @@
             return (
                 <div className="min-h-screen flex flex-col">
                     <nav className="glass-nav fixed w-full z-50 transition-all h-16 flex items-center justify-between px-4 sm:px-8">
-                        <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('hub')}>
-                            <Car className="text-blue-600 w-6 h-6" />
-                            <span className="text-xl font-bold">Demandio <span className="text-blue-600 text-xs uppercase font-black tracking-widest">News</span></span>
+                        <div className="flex items-center gap-4 sm:gap-6">
+                            <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('hub')}>
+                                <Car className="text-blue-600 w-6 h-6" />
+                                <span className="text-xl font-bold">Demandio <span className="text-blue-600 text-xs uppercase font-black tracking-widest">News</span></span>
+                            </div>
+                            <a href="index.html" className="hidden sm:flex items-center gap-2 text-[10px] font-black uppercase text-slate-400 hover:text-blue-600 transition border-l border-slate-200 pl-6">
+                                <Home size={12} /> {t.backHome}
+                            </a>
                         </div>
-                        <button onClick={() => setLang(lang === 'en' ? 'nl' : 'en')} className="bg-slate-100 px-3 py-1 rounded-full text-[10px] font-black uppercase text-slate-600 hover:bg-slate-200 transition">{lang}</button>
+                        <div className="flex items-center gap-2">
+                             <a href="index.html" className="sm:hidden p-2 text-slate-400 hover:text-blue-600 transition">
+                                <Home size={18} />
+                            </a>
+                            <button 
+                                onClick={() => setLang(l => l === 'en' ? 'nl' : 'en')} 
+                                className="bg-slate-100 px-4 py-1.5 rounded-full text-[10px] font-black uppercase text-slate-600 hover:bg-slate-200 transition flex items-center gap-2"
+                            >
+                                <Globe size={12} />
+                                {lang === 'en' ? 'NL' : 'EN'}
+                            </button>
+                        </div>
                     </nav>
 
                     <main className="flex-grow pt-24 pb-20">
                         {view === 'hub' ? (
                             <div className="max-w-7xl mx-auto px-4 animate-fade-in">
                                 <header className="mb-16">
-                                    <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight">Industry Updates</h1>
-                                    <p className="text-slate-400 font-medium text-lg">Real-time alerts on subsidies and automotive regulations in the Netherlands.</p>
+                                    <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight">{t.hubTitle}</h1>
+                                    <p className="text-slate-400 font-medium text-lg">{t.hubSubtitle}</p>
                                 </header>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-16">
                                     {articles.length > 0 ? articles.map(art => (
                                         <article key={art.id} onClick={() => handleReadArticle(art)} className="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group">
                                             <span className="text-[10px] font-black uppercase text-blue-600 tracking-widest">{art.category}</span>
-                                            <h2 className="text-2xl font-extrabold mt-6 mb-6 leading-tight group-hover:text-blue-600 transition-colors">{lang === 'en' ? art.title_en : art.title_nl}</h2>
-                                            <p className="text-slate-400 text-sm leading-relaxed mb-8 line-clamp-3">{lang === 'en' ? art.desc_en : art.desc_nl}</p>
+                                            <h2 className="text-2xl font-extrabold mt-6 mb-6 leading-tight group-hover:text-blue-600 transition-colors">
+                                                {lang === 'en' ? art.title_en : art.title_nl}
+                                            </h2>
+                                            <p className="text-slate-400 text-sm leading-relaxed mb-8 line-clamp-3">
+                                                {lang === 'en' ? art.desc_en : art.desc_nl}
+                                            </p>
                                             <footer className="flex items-center justify-between pt-6 border-t border-slate-50">
-                                                <time className="text-[10px] font-black text-slate-300 uppercase">{new Date(art.created_at).toLocaleDateString()}</time>
-                                                <span className="text-blue-600 font-black text-[10px] uppercase flex items-center gap-1">Read More <ChevronRight size={14} /></span>
+                                                <time className="text-[10px] font-black text-slate-300 uppercase">{new Date(art.created_at).toLocaleDateString(lang === 'en' ? 'en-US' : 'nl-NL')}</time>
+                                                <span className="text-blue-600 font-black text-[10px] uppercase flex items-center gap-1">{t.readMore} <ChevronRight size={14} /></span>
                                             </footer>
                                         </article>
                                     )) : (
-                                        <div className="col-span-full py-20 text-center text-slate-400 font-medium">No published articles found in your Supabase database.</div>
+                                        <div className="col-span-full py-20 text-center text-slate-400 font-medium">{t.loading}</div>
                                     )}
+                                </div>
+                                
+                                {/* Bottom Back to Home Button */}
+                                <div className="flex justify-center border-t border-slate-100 pt-12">
+                                    <a href="index.html" className="flex items-center gap-3 px-8 py-4 bg-white border border-slate-200 rounded-2xl font-bold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition shadow-sm group">
+                                        <Home size={20} className="group-hover:scale-110 transition" />
+                                        {t.backHome}
+                                    </a>
                                 </div>
                             </div>
                         ) : (
                             <div className="max-w-4xl mx-auto px-4 animate-fade-in">
-                                <button onClick={() => setView('hub')} className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-widest mb-12 hover:text-blue-600 transition"><ArrowLeft size={14} /> Back to Hub</button>
+                                <button onClick={() => setView('hub')} className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-widest mb-12 hover:text-blue-600 transition">
+                                    <ArrowLeft size={14} /> {t.back}
+                                </button>
                                 <article>
                                     <header className="mb-12">
                                         <span className="text-[10px] font-black uppercase text-blue-600 tracking-widest block mb-4">{selectedArticle.category}</span>
-                                        <h1 className="text-4xl md:text-6xl font-black text-slate-900 leading-[1.1] tracking-tight">{lang === 'en' ? selectedArticle.title_en : selectedArticle.title_nl}</h1>
+                                        <h1 className="text-4xl md:text-6xl font-black text-slate-900 leading-[1.1] tracking-tight">
+                                            {lang === 'en' ? selectedArticle.title_en : selectedArticle.title_nl}
+                                        </h1>
+                                        <div className="flex items-center gap-3 mt-6 text-sm text-slate-500 font-medium border-l-4 border-blue-100 pl-4">
+                                            <span>{selectedArticle.author}</span>
+                                            <span>•</span>
+                                            <span>{selectedArticle.source}</span>
+                                            <span>•</span>
+                                            <span>{selectedArticle.read_time || '5 min read'}</span>
+                                        </div>
                                     </header>
                                     <div className="article-body" dangerouslySetInnerHTML={{ __html: lang === 'en' ? selectedArticle.content_en : selectedArticle.content_nl }} />
                                 </article>
+                                
+                                {/* Detail View Bottom Nav */}
+                                <div className="mt-20 pt-12 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-6">
+                                    <button onClick={() => setView('hub')} className="flex items-center gap-2 font-bold text-blue-600 hover:underline">
+                                        <ArrowLeft size={16} /> {t.back}
+                                    </button>
+                                    <a href="index.html" className="flex items-center gap-2 font-bold text-slate-400 hover:text-slate-900 transition">
+                                        <Home size={16} /> {t.backHome}
+                                    </a>
+                                </div>
                             </div>
                         )}
                     </main>
