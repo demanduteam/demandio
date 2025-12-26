@@ -81,6 +81,14 @@
             const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5b21jdnFudWhwZWF6aWNpcmpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MjMxNzMsImV4cCI6MjA4MjI5OTE3M30.Bl5sahKsZ4nX0iiPT9tKmXm_Pq3bfAjLLiVYeS3oA2g';
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+            // Check for existing session on load
+            useEffect(() => {
+                const hasAccess = localStorage.getItem('demandio_access_granted');
+                if (hasAccess) {
+                    setCurrentView('choice');
+                }
+            }, []);
+
             // Fetch articles from Supabase on load
             useEffect(() => {
                 const fetchNews = async () => {
@@ -502,6 +510,9 @@
                     console.error("Supabase Error:", error.message);
                     // In a real app, you might show a small toast here. Proceeding for MVP.
                 }
+
+                // Set local storage flag
+                localStorage.setItem('demandio_access_granted', 'true');
 
                 setFormSubmitted(true);
                 // Redirect to the dedicated Tool Canvas
