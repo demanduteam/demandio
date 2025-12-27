@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading Article | Demandio</title>
+    <meta name="description" content="Automotive industry update from Demandio.">
+    <link rel="canonical" href="" />
+    
+    <!-- Structured Data Placeholder (Google Rich Results) -->
+    <script type="application/ld+json" id="structured-data">{}</script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; }
+        .glass-nav { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
+        .article-body { font-size: 1.15rem; line-height: 1.8; color: #334155; }
+        .article-body p { margin-bottom: 1.5rem; }
+        .article-body h2 { font-size: 1.8rem; font-weight: 800; margin: 2rem 0 1rem; color: #0f172a; }
+        .article-body h3 { font-size: 1.4rem; font-weight: 700; margin: 1.5rem 0 1rem; }
+        .article-body ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1.5rem; }
+        .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect } from 'https://esm.sh/react@18.2.0';
+        import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
+        import { ArrowLeft, Home, Calendar, User, Share2, Check } from 'https://esm.sh/lucide-react@0.292.0';
+
+        const SUPABASE_URL = 'https://byomcvqnuhpeazicirjg.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5b21jdnFudWhwZWF6aWNpcmpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MjMxNzMsImV4cCI6MjA4MjI5OTE3M30.Bl5sahKsZ4nX0iiPT9tKmXm_Pq3bfAjLLiVYeS3oA2g';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // SEO Injection Function
+        const injectSEO = (article, language) => {
+            if (!article) return;
+            
+            const title = language === 'en' ? article.title_en : article.title_nl;
+            const desc = language === 'en' ? article.desc_en : article.desc_nl;
+            const url = window.location.href;
+
+            // 1. Update Title & Meta
+            document.title = `${title} | Demandio Insights`;
+            document.querySelector('meta[name="description"]').setAttribute("content", desc);
+            document.querySelector('link[rel="canonical"]').setAttribute("href", url);
+
+            // 2. Inject JSON-LD Schema for Google
+            const schema = {
+                "@context": "https://schema.org",
+                "@type": "NewsArticle",
+                "headline": title,
+                "datePublished": article.created_at,
+                "author": [{ "@type": "Person", "name": article.author || "Demandio Team" }],
+                "publisher": {
+                    "@type": "Organization",
+                    "name": "Demandio",
+                    "logo": { "@type": "ImageObject", "url": "https://demandio.nl/logo.png" }
+                }
+            };
+            document.getElementById('structured-data').textContent = JSON.stringify(schema);
+        };
+
+        const ArticlePage = () => {
+            const [article, setArticle] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [lang, setLang] = useState('nl');
+            const [copied, setCopied] = useState(false);
+
+            useEffect(() => {
+                // Get Params from URL
+                const params = new URLSearchParams(window.location.search);
+                const id = params.get('id');
+                const slug = params.get('slug'); // NEW: Get slug from URL
+                const urlLang = params.get('lang');
+                if (urlLang) setLang(urlLang);
+
+                const fetchArticle = async () => {
+                    if (!id && !slug) {
+                        setLoading(false); 
+                        return;
+                    }
+
+                    let query = supabase.from('articles').select('*');
+                    
+                    // Priority: Fetch by Slug, then by ID
+                    if (slug) {
+                        query = query.eq('slug', slug);
+                    } else if (id) {
+                        query = query.eq('id', id);
+                    }
+
+                    const { data, error } = await query.single();
+
+                    if (data) {
+                        setArticle(data);
+                        injectSEO(data, urlLang || 'nl');
+                    } else {
+                        // Fallback/Mock logic
+                        setArticle({
+                            id: 'mock',
+                            slug: 'hydrogen-plan-2026',
+                            title_en: "Hydrogen Infrastructure Plan 2026",
+                            title_nl: "Waterstof Infrastructuur Plan 2026",
+                            content_en: "<h2>The Future is Hydrogen</h2><p>As the Dutch government rolls out new subsidies...</p>",
+                            content_nl: "<h2>De Toekomst is Waterstof</h2><p>Nu de Nederlandse overheid nieuwe subsidies uitrolt...</p>",
+                            category: "Innovation",
+                            author: "Dr. J. Willems",
+                            source: "Ministerie I&W",
+                            created_at: new Date().toISOString()
+                        });
+                    }
+                    setLoading(false);
+                };
+
+                fetchArticle();
+            }, []);
+
+            // Handle Share
+            const share = () => {
+                navigator.clipboard.writeText(window.location.href);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            };
+
+            if (loading) return <div className="h-screen flex items-center justify-center text-slate-400">Loading Article...</div>;
+            if (!article) return <div className="h-screen flex items-center justify-center">Article Not Found. <a href="news.html" className="ml-2 text-blue-600 underline">Return to Hub</a>.</div>;
+
+            return (
+                <div className="min-h-screen flex flex-col bg-white">
+                    {/* Nav */}
+                    <nav className="glass-nav fixed w-full z-50 h-16 flex items-center justify-between px-4 sm:px-8">
+                        <a href="news.html" className="flex items-center gap-2 text-slate-500 hover:text-blue-600 transition font-bold text-sm uppercase tracking-wide">
+                            <ArrowLeft size={16} /> {lang === 'en' ? 'Back to News' : 'Terug naar Nieuws'}
+                        </a>
+                        <div className="flex gap-3">
+                            <button onClick={() => { setLang('en'); injectSEO(article, 'en'); }} className={`text-xs font-black px-2 py-1 rounded ${lang==='en' ? 'bg-blue-100 text-blue-600' : 'text-slate-400'}`}>EN</button>
+                            <button onClick={() => { setLang('nl'); injectSEO(article, 'nl'); }} className={`text-xs font-black px-2 py-1 rounded ${lang==='nl' ? 'bg-blue-100 text-blue-600' : 'text-slate-400'}`}>NL</button>
+                        </div>
+                    </nav>
+
+                    {/* Content */}
+                    <main className="flex-grow pt-32 pb-20 max-w-3xl mx-auto px-6 animate-fade-in w-full">
+                        <header className="mb-10">
+                            <span className="inline-block px-3 py-1 bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded-full mb-6">
+                                {article.category}
+                            </span>
+                            <h1 className="text-3xl md:text-5xl font-black text-slate-900 leading-tight mb-6">
+                                {lang === 'en' ? article.title_en : article.title_nl}
+                            </h1>
+                            
+                            <div className="flex flex-wrap items-center gap-6 text-sm text-slate-500 font-medium border-y border-slate-100 py-4">
+                                <div className="flex items-center gap-2">
+                                    <User size={16} className="text-blue-400" />
+                                    <span>{article.author || 'Demandio Editor'}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Calendar size={16} className="text-blue-400" />
+                                    <time>{new Date(article.created_at).toLocaleDateString()}</time>
+                                </div>
+                                <div className="ml-auto">
+                                    <button onClick={share} className="flex items-center gap-2 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition">
+                                        {copied ? <Check size={16}/> : <Share2 size={16} />}
+                                        <span className="text-xs font-bold uppercase">{copied ? 'Link Copied' : 'Share'}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </header>
+
+                        <div 
+                            className="article-body"
+                            dangerouslySetInnerHTML={{ __html: lang === 'en' ? article.content_en : article.content_nl }} 
+                        />
+                    </main>
+
+                    {/* Footer Nav */}
+                    <footer className="border-t border-slate-100 py-12 text-center bg-slate-50">
+                        <a href="index.html" className="inline-flex items-center gap-2 font-bold text-slate-400 hover:text-slate-900 transition">
+                            <Home size={16} /> Home
+                        </a>
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<ArticlePage />);
+    </script>
+</body>
+</html>
