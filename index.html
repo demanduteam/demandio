@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demandio</title>
+    <title>Demandio - The Aftermarket Ecosystem OS</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -11,8 +11,8 @@
     <!-- Babel for JSX (Standalone) -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Supabase Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Supabase JS -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
     <style>
         /* Custom Animations */
@@ -34,15 +34,11 @@
 <body>
     <div id="root"></div>
 
-    <!-- 
-      We use type="text/babel" with data-type="module" to allow ES modules (imports) 
-      to work directly in the browser via Babel. This solves the UMD dependency issues.
-    -->
     <script type="text/babel" data-type="module">
         import React, { useState, useEffect } from 'https://esm.sh/react@18.2.0';
         import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
         
-        // Import Lucide Icons directly from esm.sh
+        // Import Lucide Icons
         import { 
             Wrench, Car, Settings, Briefcase, ChevronRight, CheckCircle, Globe, 
             ArrowRight, Calculator, Video, Menu, X, ShieldCheck, RefreshCw, 
@@ -51,14 +47,21 @@
             Truck, Home, GraduationCap, Banknote, ClipboardCheck, Mic, 
             QrCode, Smartphone, ListChecks, Package, Barcode, Grid, 
             FileBarChart, Trash2, Receipt, Newspaper, ExternalLink, Quote, 
-            TrendingUp, Users, Layout 
+            TrendingUp, Users, Layout, Building2, Landmark, Factory, Network, Award,
+            Leaf, Link as LinkIcon, BarChart3, Loader2
         } from 'https://esm.sh/lucide-react@0.292.0';
 
-        const Demandio = () => {
+        // --- SUPABASE CONFIGURATION ---
+        const SUPABASE_URL = 'https://byomcvqnuhpeazicirjg.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5b21jdnFudWhwZWF6aWNpcmpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MjMxNzMsImV4cCI6MjA4MjI5OTE3M30.Bl5sahKsZ4nX0iiPT9tKmXm_Pq3bfAjLLiVYeS3oA2g';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const DemandioLanding = () => {
             const [lang, setLang] = useState('nl'); // Default to Dutch
             const [activeRole, setActiveRole] = useState(null);
-            const [currentView, setCurrentView] = useState('landing'); // 'landing', 'choice', 'subsidy_tool', 'vsme_tool'
             const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+            const [newsItems, setNewsItems] = useState([]);
+            const [loadingNews, setLoadingNews] = useState(true);
 
             // Form State
             const [formData, setFormData] = useState({ 
@@ -68,379 +71,240 @@
                 city: '', 
                 role: '', 
                 customRole: '',
-                newsletter: false // New field for newsletter
+                newsletter: false
             });
 
-            const [formSubmitted, setFormSubmitted] = useState(false);
+            const [formStatus, setFormStatus] = useState('idle'); // idle, submitting, success, error
 
-            // Supabase State
-            const [dbArticles, setDbArticles] = useState([]);
-
-            // Initialize Supabase
-            const SUPABASE_URL = 'https://byomcvqnuhpeazicirjg.supabase.co';
-            const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5b21jdnFudWhwZWF6aWNpcmpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MjMxNzMsImV4cCI6MjA4MjI5OTE3M30.Bl5sahKsZ4nX0iiPT9tKmXm_Pq3bfAjLLiVYeS3oA2g';
-            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-            // Fetch articles from Supabase on load
+            // --- FETCH NEWS FROM SUPABASE ---
             useEffect(() => {
                 const fetchNews = async () => {
-                    const { data, error } = await supabase
-                        .from('articles')
-                        .select('*')
-                        .eq('status', 'Published')
-                        .order('created_at', { ascending: false })
-                        .limit(3);
-                    
-                    if (!error && data) {
-                        setDbArticles(data);
+                    try {
+                        const { data, error } = await supabase
+                            .from('articles')
+                            .select('*')
+                            .eq('status', 'Published')
+                            .order('published_at', { ascending: false })
+                            .limit(3);
+
+                        if (error) throw error;
+                        if (data) setNewsItems(data);
+                    } catch (error) {
+                        console.error('Error fetching news:', error);
+                        // Fallback to static if DB fails (optional, keeps UI intact)
+                    } finally {
+                        setLoadingNews(false);
                     }
                 };
+
                 fetchNews();
             }, []);
 
-            // Subsidy Tool State
-            const [subsidyStep, setSubsidyStep] = useState(1);
-            const [subsidyData, setSubsidyData] = useState({
-                hasEH3: null, // boolean
-                recentPurchase: null, // boolean
-                categories: [], // array of strings: 'ev', 'fleet', 'building', 'training'
-                invoiceValue: null, // boolean (>2500)
-                isElectricVehicle: null, // boolean
-                isHeavyVehicle: null, // boolean (>2500kg)
-                smallStaff: null // boolean (<50)
-            });
+            // --- HANDLE FORM SUBMIT ---
+            const handleFormSubmit = async (e) => {
+                e.preventDefault();
+                setFormStatus('submitting');
 
-            // VSME Tool State
-            const [vsmeView, setVsmeView] = useState('setup'); // 'setup', 'wizard', 'report'
-            const [vsmeStepIndex, setVsmeStepIndex] = useState(0); 
-            const [vsmeStepsList, setVsmeStepsList] = useState([]);
-            const [vsmeConfig, setVsmeConfig] = useState({ listed: false, bpModule: false, comprehensive: false });
-            
-            // Initial VSME Data with defaults or empty strings
-            const [vsmeData, setVsmeData] = useState({
-                isListed: 'no',
-                reportPurpose: 'basic',
-                hasPolicies: 'no',
-                b1_name: '', b1_basis: 'Individual basis', b1_legal_form: '', b1_nace: '', b1_country: '', b1_turnover: '', b1_employees: '',
-                b2_practices: '',
-                b3_energy_total: '', b3_energy_ren: '', b3_energy_nonren: '', b3_scope1: '', b3_scope2: '',
-                b4_pollution: '', b5_sensitive: '', b6_water: '', b7_waste_haz: '', b7_waste_recycled: '',
-                b8_perm: '', b8_temp: '', b8_female: '', b9_accidents: '', b10_minwage: 'Yes',
-                b11_convictions: '', b11_fines: '',
-                bp_code: 'No', bp_grievance: 'No', bp_payment: '', bp_excluded_rev: '', bp_scope3_status: 'Not Measured', bp_climate_risks: '',
-                c1_strategy: '', c2_policies: '', c3_targets: '', c4_risks: '', c5_mgmt_gender: '', c6_policy: 'No', c7_incidents: 'None', c8_revenue: '', c9_board_gender: ''
-            });
+                try {
+                    const finalRole = formData.role === 'other' ? formData.customRole : formData.role;
 
-            // Content Dictionary
+                    const { error } = await supabase.from('leads').insert([{
+                        full_name: formData.name,
+                        email: formData.email,
+                        company_name: formData.company,
+                        city: formData.city,
+                        user_role: finalRole,
+                        newsletter_opt_in: formData.newsletter
+                    }]);
+
+                    if (error) throw error;
+
+                    setFormStatus('success');
+
+                    // Redirect after success
+                    setTimeout(() => {
+                        window.location.href = 'https://demandio.cloud/tools.html';
+                    }, 1500);
+
+                } catch (error) {
+                    console.error('Error submitting form:', error);
+                    setFormStatus('error');
+                    alert("Er is iets misgegaan. Probeer het later opnieuw.");
+                    setFormStatus('idle');
+                }
+            };
+
+            // --- CONTENT DICTIONARY ---
             const content = {
                 en: {
-                    nav: { solutions: "Solutions", news: "News", subsidy_guide: "Subsidy Roadmap", contact: "Contact" },
+                    nav: { solutions: "Solutions", pillars: "Ecosystem", news: "News", subsidy_guide: "The Journey", contact: "Contact" },
                     hero: {
-                        title: "Move Your Garage From the Paper Age to the Smart Age",
-                        subtitle: "The platform that empowers every role in your garage. From mechanic to owner, we convert chaos into profit.",
-                        cta: "Calculate Lost Revenue",
-                        trust: "Trusted by forward-thinking garages in the Netherlands"
+                        title: "The Operating System for the Sustainable Aftermarket",
+                        subtitle: "Unifying Garages, Networks, and Wholesalers. We turn compliance data into profit, sustainability into strategy, and chaos into clarity.",
+                        cta: "Explore Ecosystem Solutions",
+                        trust: "Empowering the entire Dutch automotive chain: From Bay to Boardroom."
                     },
                     stats: {
-                        claimed: "€2.4M+ Subsidies Claimed",
-                        garages: "150+ Garages Connected",
-                        hours: "12k+ Hours Saved"
+                        stat1: "€2.4M+ Value Created",
+                        stat2: "150+ Partners Connected",
+                        stat3: "CSRD Ready Data"
                     },
                     roles: {
-                        title: "Select your role to see your superpowers",
+                        title: "Select your position in the ecosystem",
+                        section_operational: "Operational Excellence (Garage Level)",
+                        section_strategic: "Strategic Leadership (Network Level)",
                         garage_owner: "Garage Owner",
                         advisor: "Service Advisor",
                         mechanic: "Mechanic",
                         warehouse: "Warehouse Mgr.",
                         financial: "Accountant/Admin",
+                        formula_manager: "Formula Manager",
+                        association: "Association (BOVAG/RAI)",
+                        wholesaler: "Wholesaler"
                     },
-                    solutions: { title: "Your Toolkit", back: "Choose a different role", cta_button: "Start Free Pilot", cta_desc: "Ready to optimize your workflow?" },
-                    // News Section Content
+                    solutions: { title: "Your Digital Toolkit", back: "Choose a different role", cta_button: "Start Pilot", cta_desc: "Ready to optimize?" },
+                    pillars: {
+                        title: "One Platform, Four Pillars of Value",
+                        subtitle: "How we drive the industry forward aligned with Dutch goals.",
+                        p1_title: "Profit & Subsidies",
+                        p1_desc: "Automated scanning for MIA/Vamil, SEBA, and SLIM. Don't leave government money on the table.",
+                        p2_title: "Sustainability & ESG",
+                        p2_desc: "VSME & CSRD reporting made easy. Track CO2, waste, and circularity for bank loans and compliance.",
+                        p3_title: "Operational Efficiency",
+                        p3_desc: "Digital tools for mechanics and warehouses. Reduce error rates and logistics losses (Cores).",
+                        p4_title: "Strategic Intelligence",
+                        p4_desc: "Real-time benchmarking and trend analysis for networks and associations to lead the market."
+                    },
                     news: {
-                        title: "Industry News & Subsidy Alerts",
-                        subtitle: "Stay ahead of regulations and opportunities.",
-                        read_more: "Read Source",
-                        items: [
-                            {
-                                title: "SEBA Subsidy Pot Closing Soon",
-                                date: "12 Oct 2024",
-                                source: "RVO.nl",
-                                desc: "The budget for electric commercial vehicles (SEBA) is 85% full. Apply before it's too late.",
-                                link: "news.html"
-                            },
-                            {
-                                title: "New VSME Reporting Standards",
-                                date: "05 Nov 2024",
-                                source: "EFRAG",
-                                desc: "Banks will require the new simplified ESG report (VSME) for loans above €50k starting 2025.",
-                                link: "news.html"
-                            },
-                            {
-                                title: "MIA/Vamil List 2025 Updates",
-                                date: "01 Dec 2024",
-                                source: "Belastingdienst",
-                                desc: "New categories for hydrogen equipment and battery recycling added to the tax relief list.",
-                                link: "news.html"
-                            }
-                        ]
+                        title: "Market Intelligence & Regulatory Updates",
+                        subtitle: "Stay ahead of Dutch laws, EU Directives, and Tech Trends.",
+                        read_more: "Read Analysis",
+                        loading: "Loading latest updates...",
+                        empty: "No news available at the moment."
+                    },
+                    roadmap: {
+                        title: "The Path to a Future-Proof Business",
+                        subtitle: "Whether you fix cars or manage a network, here is how we upgrade you.",
+                        step1: "Connect & Scan",
+                        step1_desc: "Link your DMS or purchasing data. We scan for hidden opportunities (Money/Efficiency).",
+                        step2: "Analyze & Benchmark",
+                        step2_desc: "AI compares your performance against the market. Identify gaps in ESG or Profit.",
+                        step3: "Optimize & Comply",
+                        step3_desc: "Actionable tools: Auto-generate ESG reports, apply for subsidies, or train staff.",
+                        step4: "Grow & Report",
+                        step4_desc: "Showcase your 'Green Score' to customers and banks. Unlock better financing.",
+                        cta: "Start Your Journey" 
                     },
                     testimonials: {
                         title: "Trusted by Industry Leaders",
-                        t1_quote: "We recovered €4,500 in subsidies we didn't even know existed. The Subsidy Radar pays for itself.",
-                        t1_author: "Jan de Vries, Owner at Vakgarage Amsterdam",
-                        t2_quote: "The video tool reduced our phone time by half. Customers just click 'Approve' on WhatsApp.",
-                        t2_author: "Sarah Jansen, Service Advisor at AutoCenter Utrecht"
+                        t1_quote: "Demandio completely transformed how we handle subsidy applications. It's automated revenue.",
+                        t1_author: "Jan de Vries, Garage Owner",
+                        t2_quote: "The ESG reporting tool saved us weeks of consultant fees. Essential for our future.",
+                        t2_author: "Sarah Jansen, Fleet Manager"
                     },
-                    // Subsidy Roadmap Section
-                    subsidy_roadmap: {
-                        title: "Your Roadmap to Free Government Money",
-                        subtitle: "How to claim subsidies like MIA, Vamil, and SEBA in 4 simple steps.",
-                        step1: "Check Eligibility",
-                        step1_desc: "Use our tool to scan purchases.",
-                        step2: "Validation",
-                        step2_desc: "We verify invoice details.",
-                        step3: "Submission",
-                        step3_desc: "Auto-send to RVO portal.",
-                        step4: "Cash In",
-                        step4_desc: "Receive funds in your account.",
-                        cta: "See How Much You Can Get"
-                    },
-                    trust_badges: { bovag: "BOVAG Standards Compliant", rdw: "Connected to RDW Data", iso: "ISO 27001 Data Security" },
                     form: {
-                        title: "Get Early Access & Check Tools",
+                        title: "Join the Ecosystem",
+                        subtitle: "Request a tailored demo for your specific role in the aftermarket.",
                         name: "Full Name",
-                        email: "Email Address",
-                        company: "Company Name",
+                        email: "Work Email",
+                        company: "Company / Organization",
                         city: "City",
                         role: "Your Role",
                         role_placeholder: "Select your role...",
                         role_other: "Other (Please specify)",
-                        custom_role_placeholder: "e.g., Innovation Manager",
-                        newsletter: "Keep me updated on new subsidies and VSME regulations.",
-                        submit: "Continue to Tools",
-                        success: "We have received your details. Loading tool selection..."
+                        custom_role_placeholder: "e.g., Policy Maker",
+                        newsletter: "Send me the 'Aftermarket 2030' whitepaper.",
+                        submit: "Request Access",
+                        submitting: "Processing...",
+                        success: "Thank you. Redirecting to tools..."
                     },
-                    footer: { rights: "© 2026 Demandio Netherlands. All rights reserved." },
-                    // Subsidy Tool Content
-                    tool: {
-                        step1: {
-                            title: "The Gatekeeper",
-                            msg: "Hi! Let's see how much the Dutch government can help upgrade your garage. First, a technical question:",
-                            q: "Do you have eHerkenning Level 3 (EH3)?",
-                            yes: "Yes, I have it.",
-                            no: "No, or I don't know what it is.",
-                            alert: "You need this ID for subsidies. Don't worry! Click here to get a free guide on how to get EH3. Let's continue calculating your potential for now."
-                        },
-                        step2: {
-                            title: "The 90-Day Rule",
-                            msg: "Many subsidies have a golden rule: apply within 3 months of purchase.",
-                            q: "Have you bought new equipment or signed a contract (Offerte) in the last 3 months?",
-                            yes: "Yes, recently.",
-                            no: "No, but planning to soon."
-                        },
-                        step3: {
-                            title: "Activity & Details",
-                            msg: "Select activities to see required details:",
-                            opt_ev: "EV Equipment (Charging stations, EV tools)",
-                            opt_fleet: "Fleet Renewal (Electric vans/cargo)",
-                            opt_building: "Building Optimization (LED, Heat pump)",
-                            opt_training: "Training (Staff education, NEN 9140)",
-                            // Questions embedded in Step 3
-                            q_ev: "Is your invoice amount above €2,500?",
-                            q_fleet_electric: "Is the vehicle fully electric?",
-                            q_fleet_weight: "Is the weight above 2,500 kg?",
-                            q_training: "Does your garage have fewer than 50 employees?"
-                        },
-                        step5: { // Note: Step 4 is merged into 3, so next logical step is results (internally mapped)
-                            title: "Your Potential",
-                            msg: "Congratulations! Based on your answers, your garage has potential for:",
-                            card_mia: "MIA/Vamil",
-                            card_mia_desc: "Tax deduction potential up to 45% of purchase cost.",
-                            card_seba: "SEBA Grant",
-                            card_seba_desc: "Receive up to €5,000 cash for electric vans.",
-                            card_slim: "SLIM Subsidy",
-                            card_slim_desc: "Reimbursement up to 80% of staff training costs."
-                        },
-                        step6: {
-                            title: "Don't lose this money!",
-                            msg: "What should be the next step?",
-                            btn_esg: "Generate ESG Kit",
-                            btn_acc: "Send to Accountant",
-                            btn_consult: "Book Free Consultation"
-                        },
-                        next: "View Results",
-                        back: "Back",
-                        yes: "Yes",
-                        no: "No"
-                    },
-                    // Choice View Content
-                    choice: {
-                        title: "Welcome aboard,",
-                        subtitle: "What is your main goal today?",
-                        card1_title: "Subsidy Finder",
-                        card1_desc: "Scan your purchases and find unclaimed government money (SEBA, MIA, SLIM).",
-                        card1_btn: "Find Subsidies",
-                        card2_title: "VSME Report Generator",
-                        card2_desc: "Create a bank-ready ESG report (VSME Standard) for loans and leasing.",
-                        card2_btn: "Create Report"
-                    }
+                    footer: { rights: "© 2026 Demandio Netherlands. Empowering the Transition." }
                 },
                 nl: {
-                    nav: { solutions: "Oplossingen", news: "Nieuws", subsidy_guide: "Subsidie Route", contact: "Contact" },
+                    nav: { solutions: "Oplossingen", pillars: "Ecosystem", news: "Nieuws", subsidy_guide: "De Reis", contact: "Contact" },
                     hero: {
-                        title: "Breng uw garage van het papiertijdperk naar het slimme tijdperk",
-                        subtitle: "Het platform dat elke rol in uw garage versterkt. Van monteur tot eigenaar, wij zetten chaos om in winst.",
-                        cta: "Bereken Gederfde Inkomsten",
-                        trust: "Vertrouwd door toekomstgerichte garages in Nederland"
+                        title: "Het Besturingssysteem voor de Duurzame Aftermarket",
+                        subtitle: "Verenigt Garages, Netwerken en Grossiers. Wij zetten compliance data om in winst, duurzaamheid in strategie, en chaos in inzicht.",
+                        cta: "Ontdek Ecosysteem Oplossingen",
+                        trust: "Vertrouwd door de gehele Nederlandse keten: Van Werkplaats tot Bestuurskamer."
                     },
                     stats: {
-                        claimed: "€2.4M+ Subsidies Geclaimd",
-                        garages: "150+ Garages Aangesloten",
-                        hours: "12k+ Uren Bespaard"
+                        stat1: "€2.4M+ Waarde Gecreëerd",
+                        stat2: "150+ Partners Aangesloten",
+                        stat3: "CSRD-Klaar Data"
                     },
                     roles: {
-                        title: "Kies uw rol om uw superkrachten te zien",
+                        title: "Kies uw positie in het ecosysteem",
+                        section_operational: "Operationele Excellentie (Garage Niveau)",
+                        section_strategic: "Strategisch Leiderschap (Netwerk Niveau)",
                         garage_owner: "Garagehouder",
                         advisor: "Service Adviseur",
                         mechanic: "Monteur",
                         warehouse: "Magazijn Manager",
                         financial: "Boekhouder / Admin",
+                        formula_manager: "Formule Manager",
+                        association: "Branchevereniging (BOVAG)",
+                        wholesaler: "Grossier / Distributeur"
                     },
-                    solutions: { title: "Uw Gereedschapskist", back: "Kies een andere rol", cta_button: "Start Gratis Pilot", cta_desc: "Klaar om uw workflow te optimaliseren?" },
-                    // News Section Content
+                    solutions: { title: "Uw Digitale Gereedschapskist", back: "Kies een andere rol", cta_button: "Start Pilot", cta_desc: "Klaar voor optimalisatie?" },
+                    pillars: {
+                        title: "Eén Platform, Vier Waardepijlers",
+                        subtitle: "Hoe wij de industrie vooruit helpen in lijn met Nederlandse doelen.",
+                        p1_title: "Winst & Subsidies",
+                        p1_desc: "Automatische scan voor MIA/Vamil, SEBA en SLIM. Laat geen overheidsgeld liggen.",
+                        p2_title: "Duurzaamheid & ESG",
+                        p2_desc: "VSME & CSRD rapportage eenvoudig gemaakt. Volg CO2, afval en circulariteit voor bankleningen.",
+                        p3_title: "Operationele Efficiëntie",
+                        p3_desc: "Digitale tools voor monteurs en magazijn. Verminder fouten en logistieke verliezen (Cores).",
+                        p4_title: "Strategische Intelligentie",
+                        p4_desc: "Real-time benchmarking en trendanalyse voor netwerken om de markt te leiden."
+                    },
                     news: {
-                        title: "Sector Nieuws & Subsidie Alerts",
-                        subtitle: "Blijf op de hoogte van regelgeving en kansen.",
-                        read_more: "Bekijk Bron",
-                        items: [
-                            {
-                                title: "SEBA Subsidiepot Bijna Leeg",
-                                date: "12 Okt 2024",
-                                source: "RVO.nl",
-                                desc: "Het budget voor elektrische bestelauto's (SEBA) is voor 85% benut. Vraag aan voordat het te laat is.",
-                                link: "news.html"
-                            },
-                            {
-                                title: "Nieuwe VSME Rapportage Normen",
-                                date: "05 Nov 2024",
-                                source: "EFRAG",
-                                desc: "Banken eisen vanaf 2025 de nieuwe vereenvoudigde ESG-rapportage (VSME) voor leningen boven €50k.",
-                                link: "news.html"
-                            },
-                            {
-                                title: "MIA/Vamil Lijst 2025 Updates",
-                                date: "01 Dec 2024",
-                                source: "Belastingdienst",
-                                desc: "Nieuwe categorieën voor waterstofapparatuur en batterijrecycling toegevoegd aan de lijst.",
-                                link: "news.html"
-                            }
-                        ]
+                        title: "Marktintelligentie & Regelgeving",
+                        subtitle: "Blijf voor op Nederlandse wetten, EU-richtlijnen en tech trends.",
+                        read_more: "Lees Analyse",
+                        loading: "Laatste updates laden...",
+                        empty: "Geen nieuws beschikbaar op dit moment."
+                    },
+                    roadmap: {
+                        title: "Het Pad naar een Toekomstbestendig Bedrijf",
+                        subtitle: "Of u nu auto's repareert of een netwerk beheert, zo upgraden wij u.",
+                        step1: "Verbind & Scan",
+                        step1_desc: "Koppel uw DMS of inkoopdata. Wij scannen op verborgen kansen (Geld/Efficiëntie).",
+                        step2: "Analyseer & Benchmark",
+                        step2_desc: "AI vergelijkt uw prestaties met de markt. Identificeer gaten in ESG of Winst.",
+                        step3: "Optimaliseer & Voldoe",
+                        step3_desc: "Actiegerichte tools: Genereer ESG-rapporten, vraag subsidies aan of train personeel.",
+                        step4: "Groei & Rapporteer",
+                        step4_desc: "Toon uw 'Groene Score' aan klanten en banken. Ontgrendel betere financiering.",
+                        cta: "Start Uw Reis"
                     },
                     testimonials: {
-                        title: "Vertrouwd door Industrie Leiders",
-                        t1_quote: "We hebben €4.500 aan subsidies teruggevonden die we niet eens wisten. De Subsidie Radar betaalt zichzelf terug.",
-                        t1_author: "Jan de Vries, Eigenaar bij Vakgarage Amsterdam",
-                        t2_quote: "De videotool heeft onze telefoontijd gehalveerd. Klanten klikken gewoon op 'Akkoord' in WhatsApp.",
-                        t2_author: "Sarah Jansen, Service Adviseur bij AutoCenter Utrecht"
+                        title: "Vertrouwd door Koplopers",
+                        t1_quote: "Demandio heeft onze subsidieaanvragen volledig getransformeerd. Het is geautomatiseerde omzet.",
+                        t1_author: "Jan de Vries, Garagehouder",
+                        t2_quote: "De ESG-rapportagetool bespaarde ons weken aan consultantskosten. Essentieel voor onze toekomst.",
+                        t2_author: "Sarah Jansen, Vlootbeheerder"
                     },
-                    // New Subsidy Roadmap Section
-                    subsidy_roadmap: {
-                        title: "Uw Route naar Gratis Overheidsgeld",
-                        subtitle: "Hoe u subsidies zoals MIA, Vamil en SEBA claimt in 4 simpele stappen.",
-                        step1: "Check Geschiktheid",
-                        step1_desc: "Gebruik onze tool om aankopen te scannen.",
-                        step2: "Validatie",
-                        step2_desc: "Wij verifiëren de factuurdetails.",
-                        step3: "Indienen",
-                        step3_desc: "Automatisch versturen naar RVO.",
-                        step4: "Uitbetaling",
-                        step4_desc: "Ontvang geld op uw rekening.",
-                        cta: "Bekijk Hoeveel U Kunt Krijgen"
-                    },
-                    trust_badges: { bovag: "Voldoet aan BOVAG normen", rdw: "Gekoppeld aan RDW Data", iso: "ISO 27001 Dataveiligheid" },
                     form: {
-                        title: "Vraag toegang aan & Check Tools",
+                        title: "Sluit aan bij het Ecosysteem",
+                        subtitle: "Vraag een demo op maat voor uw specifieke rol in de aftermarket.",
                         name: "Volledige naam",
-                        email: "E-mailadres",
-                        company: "Bedrijfsnaam",
+                        email: "Zakelijk E-mailadres",
+                        company: "Bedrijfsnaam / Organisatie",
                         city: "Stad",
                         role: "Uw Rol",
                         role_placeholder: "Selecteer uw rol...",
                         role_other: "Anders (specificeer a.u.b.)",
-                        custom_role_placeholder: "bijv. Innovatiemanager",
-                        newsletter: "Houd mij op de hoogte van nieuwe subsidies en VSME regels.",
-                        submit: "Ga naar Tools",
-                        success: "We hebben uw gegevens ontvangen. Tool selectie wordt geladen..."
+                        custom_role_placeholder: "bijv. Beleidsmaker",
+                        newsletter: "Stuur mij de whitepaper 'Aftermarket 2030'.",
+                        submit: "Vraag Toegang",
+                        submitting: "Verwerken...",
+                        success: "Bedankt. U wordt doorgestuurd naar de tools..."
                     },
-                    footer: { rights: "© 2026 Demandio Nederland. Alle rechten voorbehouden." },
-                    // Subsidy Tool Content
-                    tool: {
-                        step1: {
-                            title: "De Poortwachter",
-                            msg: "Hallo! Laten we kijken hoeveel de overheid kan bijdragen aan uw garage. Eerst een technische vraag:",
-                            q: "Heeft u eHerkenning niveau 3 (EH3)?",
-                            yes: "Ja, dat heb ik.",
-                            no: "Nee, of ik weet niet wat het is.",
-                            alert: "Zonder dit ID kunt u geen subsidie aanvragen. Geen zorgen! Klik hier voor een gratis handleiding voor EH3. Laten we nu doorgaan met berekenen."
-                        },
-                        step2: {
-                            title: "De 90-Dagen Regel",
-                            msg: "Veel subsidies hebben een gouden regel: vraag aan binnen 3 maanden na aankoop.",
-                            q: "Heeft u de afgelopen 3 maanden apparatuur gekocht of een offerte getekend?",
-                            yes: "Ja, onlangs.",
-                            no: "Nee, maar binnenkort van plan."
-                        },
-                        step3: {
-                            title: "Activiteit & Details",
-                            msg: "Selecteer activiteiten en beantwoord de details direct:",
-                            opt_ev: "EV Apparatuur (Laadpalen, EV tools)",
-                            opt_fleet: "Vlootvernieuwing (Elektrische busjes/cargo)",
-                            opt_building: "Pand Optimalisatie (LED, Warmtepomp)",
-                            opt_training: "Opleiding (Personeelstraining, NEN 9140)",
-                            // Questions embedded in Step 3
-                            q_ev: "Is het factuurbedrag hoger dan €2.500?",
-                            q_fleet_electric: "Is het voertuig volledig elektrisch?",
-                            q_fleet_weight: "Is het gewicht boven de 2.500 kg?",
-                            q_training: "Heeft uw garage minder dan 50 medewerkers?"
-                        },
-                        step5: {
-                            title: "Uw Potentieel",
-                            msg: "Gefeliciteerd! Op basis van uw antwoorden heeft uw garage potentie voor:",
-                            card_mia: "MIA/Vamil",
-                            card_mia_desc: "Fiscale aftrek tot 45% van de investeringskosten.",
-                            card_seba: "SEBA Subsidie",
-                            card_seba_desc: "Ontvang tot €5.000 cash voor elektrische bestelwagens.",
-                            card_slim: "SLIM Regeling",
-                            card_slim_desc: "Vergoeding tot 80% van opleidingskosten."
-                        },
-                        step6: {
-                            title: "Laat dit geld niet liggen!",
-                            msg: "Wat wilt u nu doen?",
-                            btn_esg: "Genereer ESG Kit",
-                            btn_acc: "Stuur naar Boekhouder",
-                            btn_consult: "Boek Gratis Consult"
-                        },
-                        next: "Bekijk Resultaten",
-                        back: "Terug",
-                        yes: "Ja",
-                        no: "Nee"
-                    },
-                    // Choice View Content
-                    choice: {
-                        title: "Welkom aan boord,",
-                        subtitle: "Wat is uw belangrijkste doel vandaag?",
-                        card1_title: "Subsidie Zoeker",
-                        card1_desc: "Scan uw aankopen en vind niet-geclaimd overheidsgeld (SEBA, MIA, SLIM).",
-                        card1_btn: "Zoek Subsidies",
-                        card2_title: "VSME Rapport Generator",
-                        card2_desc: "Maak een bank-klaar ESG rapport (VSME Standaard) voor leningen en leasing.",
-                        card2_btn: "Maak Rapport"
-                    }
+                    footer: { rights: "© 2026 Demandio Nederland. Empowering the Transition." }
                 }
             };
-
-            const t = content[lang];
-            const tt = content[lang].tool;
 
             const opportunities = {
                 garage_owner: [
@@ -470,657 +334,32 @@
                     { id: 16, icon: <RefreshCw className="w-8 h-8 text-blue-600" />, title: { en: "Auto-Sync", nl: "Auto-Sync" }, pain: { en: "Manual data entry hate.", nl: "Haat aan handmatige invoer." }, desc: { en: "Connects all operations (parts, hours) to SnelStart/Exact. No more manual entry.", nl: "Verbindt alle operaties (onderdelen, uren) met SnelStart/Exact. Geen handmatige invoer meer." }, tag: { en: "Automation", nl: "Automatisering" } },
                     { id: 17, icon: <Trash2 className="w-8 h-8 text-green-600" />, title: { en: "Digital Waste Log", nl: "Digitaal Afval Log" }, pain: { en: "Environmental audit stress.", nl: "Stress voor milieu-audit." }, desc: { en: "Digital archive of all disposal receipts. Always Audit Ready for inspectors.", nl: "Digitaal archief van alle afvoerbewijzen. Altijd Audit Ready voor inspecteurs." }, tag: { en: "Compliance", nl: "Naleving" } },
                     { id: 18, icon: <Receipt className="w-8 h-8 text-purple-600" />, title: { en: "Purchase Match", nl: "Inkoop Match" }, pain: { en: "Missing invoices.", nl: "Ontbrekende facturen." }, desc: { en: "Auto-match LKQ purchase invoices with parts used on customer cars. Zero leakage.", nl: "Match automatisch LKQ-inkoopfacturen met gebruikte onderdelen. Nul lekkage." }, tag: { en: "Control", nl: "Controle" } }
+                ],
+                formula_manager: [
+                    { id: 19, icon: <Network className="w-8 h-8 text-indigo-600" />, title: { en: "Network Subsidy Engine", nl: "Netwerk Subsidie Motor" }, pain: { en: "Garage retention", nl: "Garage behoud" }, desc: { en: "Central dashboard showing '50 garages eligible for SLIM'. Bulk application tools.", nl: "Centraal dashboard toont '50 garages in aanmerking voor SLIM'. Bulk aanvraag tools." }, tag: { en: "Retention", nl: "Behoud" } },
+                    { id: 20, icon: <ShieldCheck className="w-8 h-8 text-teal-600" />, title: { en: "Brand Compliance", nl: "Merk Naleving" }, pain: { en: "Manual quality checks", nl: "Handmatige kwaliteitscontroles" }, desc: { en: "Auto-scoring of garages based on recycling and training data. No physical inspector needed.", nl: "Auto-scoring van garages op basis van recycling en training data. Geen inspecteur nodig." }, tag: { en: "Quality", nl: "Kwaliteit" } },
+                    { id: 21, icon: <Building2 className="w-8 h-8 text-green-600" />, title: { en: "Green Marketing Hub", nl: "Groene Marketing Hub" }, pain: { en: "Brand differentiation", nl: "Merk differentiatie" }, desc: { en: "Aggregate circularity data for national TV campaigns: 'Our network emits 30% less CO2'.", nl: "Verzamel circulariteitsdata voor TV campagnes: 'Ons netwerk stoot 30% minder CO2 uit'." }, tag: { en: "Growth", nl: "Groei" } },
+                    { id: 22, icon: <FileBarChart className="w-8 h-8 text-purple-600" />, title: { en: "Performance Benchmark", nl: "Prestatie Benchmark" }, pain: { en: "Underperforming locations", nl: "Slecht presterende locaties" }, desc: { en: "Compare garage energy/waste data against network average to offer specific advice.", nl: "Vergelijk energie/afval data met netwerk gemiddelde voor specifiek advies." }, tag: { en: "Data", nl: "Data" } }
+                ],
+                association: [
+                    { id: 23, icon: <FileText className="w-8 h-8 text-indigo-600" />, title: { en: "Industry Pulse Report", nl: "Industrie Puls Rapport" }, pain: { en: "Lobbying power", nl: "Lobbykracht" }, desc: { en: "Real-time anonymous data from the market floor for negotiations with lawmakers in The Hague.", nl: "Real-time anonieme data van de werkvloer voor onderhandelingen in Den Haag." }, tag: { en: "Lobby", nl: "Lobby" } },
+                    { id: 24, icon: <ClipboardCheck className="w-8 h-8 text-blue-600" />, title: { en: "Self-Audit Tool", nl: "Zelf-Audit Tool" }, pain: { en: "Fine prevention", nl: "Boete preventie" }, desc: { en: "Digital checklists (ZE Zones, GDPR) branded for members to pre-check before inspections.", nl: "Digitale checklists (ZE Zones, AVG) voor leden om te checken voor inspectie." }, tag: { en: "Compliance", nl: "Naleving" } },
+                    { id: 25, icon: <TrendingUp className="w-8 h-8 text-purple-600" />, title: { en: "Tech Trend Watch", nl: "Tech Trend Watch" }, pain: { en: "Targeted training", nl: "Gerichte training" }, desc: { en: "Analyze common DTCs (errors) to identify exact training needs for the industry.", nl: "Analyseer veelvoorkomende foutcodes om trainingsbehoeften te identificeren." }, tag: { en: "Insight", nl: "Inzicht" } }
+                ],
+                wholesaler: [
+                    { id: 26, icon: <RefreshCw className="w-8 h-8 text-indigo-600" />, title: { en: "Smart Core Management", nl: "Slim Core Beheer" }, pain: { en: "Logistics losses", nl: "Logistieke verliezen" }, desc: { en: "API connection triggers reminder to garage: 'New part sold, return old core now'.", nl: "API-koppeling stuurt herinnering: 'Nieuw onderdeel verkocht, stuur oude retour'." }, tag: { en: "Logistics", nl: "Logistiek" } },
+                    { id: 27, icon: <Factory className="w-8 h-8 text-green-600" />, title: { en: "Scope 3 Collector", nl: "Scope 3 Verzamelaar" }, pain: { en: "CSRD Compliance", nl: "CSRD Naleving" }, desc: { en: "Automated collection of carbon footprint data from garage customers for your annual report.", nl: "Geautomatiseerde verzameling van CO2-data van klanten voor uw jaarverslag." }, tag: { en: "CSRD", nl: "CSRD" } },
+                    { id: 28, icon: <Award className="w-8 h-8 text-yellow-500" />, title: { en: "Green Parts Gamification", nl: "Groene Onderdelen Spel" }, pain: { en: "Selling reman parts", nl: "Verkoop reman onderdelen" }, desc: { en: "Points system: 'Buying this Reman alternator boosts your Green Score by 5 points'.", nl: "Puntensysteem: 'Koop deze Reman dynamo en verhoog uw Groene Score met 5'." }, tag: { en: "Sales", nl: "Verkoop" } }
                 ]
             };
+
+            const t = content[lang];
 
             const handleRoleSelect = (role) => {
                 setActiveRole(role);
                 setTimeout(() => { document.getElementById('solutions-section')?.scrollIntoView({ behavior: 'smooth' }); }, 100);
             };
 
-            // --- SUPABASE FORM SUBMISSION ---
-            const handleFormSubmit = async (e) => {
-                e.preventDefault();
-                
-                const finalRole = formData.role === 'other' ? formData.customRole : formData.role;
-
-                // Insert into Supabase 'leads' table
-                const { error } = await supabase
-                    .from('leads')
-                    .insert([
-                        {
-                            full_name: formData.name,
-                            email: formData.email,
-                            company_name: formData.company,
-                            city: formData.city,
-                            user_role: finalRole,
-                            newsletter_opt_in: formData.newsletter
-                        }
-                    ]);
-
-                if (error) {
-                    console.error("Supabase Error:", error.message);
-                    // In a real app, you might show a small toast here. Proceeding for MVP.
-                }
-
-                setFormSubmitted(true);
-                setTimeout(() => {
-                    setCurrentView('choice'); 
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                }, 1500);
-            };
-
-            const handleCategoryToggle = (category) => {
-                setSubsidyData(prev => {
-                const cats = prev.categories.includes(category)
-                    ? prev.categories.filter(c => c !== category)
-                    : [...prev.categories, category];
-                return { ...prev, categories: cats };
-                });
-            };
-
-            const nextFromStep3 = () => {
-                if (subsidyData.categories.length === 0) return alert("Select at least one.");
-                setSubsidyStep(5);
-            };
-
-            // --- RENDER HELPERS ---
-
-            const renderChoiceSection = () => {
-                return (
-                <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 font-sans flex items-center justify-center">
-                    <div className="max-w-4xl w-full">
-                        <div className="text-center mb-12">
-                            <h2 className="text-4xl font-extrabold text-blue-900 mb-2">{t.choice.title} <span className="text-green-500">{formData.name}</span></h2>
-                            <p className="text-xl text-gray-500">{t.choice.subtitle}</p>
-                        </div>
-
-                        <div className="grid md:grid-cols-2 gap-8">
-                            {/* Subsidy Card */}
-                            <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-shadow border-2 border-transparent hover:border-green-400 group cursor-pointer" onClick={() => setCurrentView('subsidy_tool')}>
-                                <div className="bg-green-50 p-8 flex justify-center">
-                                    <Calculator className="w-24 h-24 text-green-500 group-hover:scale-110 transition-transform" />
-                                </div>
-                                <div className="p-8 text-center">
-                                    <h3 className="text-2xl font-bold text-gray-900 mb-4">{t.choice.card1_title}</h3>
-                                    <p className="text-gray-600 mb-8">{t.choice.card1_desc}</p>
-                                    <button className="w-full bg-green-500 text-white font-bold py-3 rounded-lg hover:bg-green-600 transition">
-                                        {t.choice.card1_btn}
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* VSME Card */}
-                            <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-shadow border-2 border-transparent hover:border-blue-400 group cursor-pointer" onClick={() => setCurrentView('vsme_tool')}>
-                                <div className="bg-blue-50 p-8 flex justify-center">
-                                    <FileBarChart className="w-24 h-24 text-blue-500 group-hover:scale-110 transition-transform" />
-                                </div>
-                                <div className="p-8 text-center">
-                                    <h3 className="text-2xl font-bold text-gray-900 mb-4">{t.choice.card2_title}</h3>
-                                    <p className="text-gray-600 mb-8">{t.choice.card2_desc}</p>
-                                    <button className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition">
-                                        {t.choice.card2_btn}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div className="mt-12 text-center">
-                            <button onClick={() => { setCurrentView('landing'); window.scrollTo(0,0); }} className="text-gray-400 hover:text-gray-600 underline">
-                                Back to Home
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                );
-            };
-
-            const renderVSMETool = () => {
-                // If in Report View
-                if (vsmeView === 'report') {
-                    return (
-                        <div className="min-h-screen bg-gray-100 py-12 px-4 font-sans">
-                            <div className="max-w-4xl mx-auto bg-white p-4 md:p-10 shadow-2xl rounded-xl">
-                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b pb-4 gap-4">
-                                    <h1 className="text-2xl font-bold text-blue-900">VSME Report <span className="text-sm font-normal text-gray-500">({vsmeConfig.comprehensive ? 'Comprehensive' : 'Basic'})</span></h1>
-                                    <div className="flex gap-2 print:hidden">
-                                        <button onClick={() => window.print()} className="bg-blue-600 text-white px-4 py-2 rounded">Print / PDF</button>
-                                        <button onClick={() => setVsmeView('setup')} className="bg-gray-200 px-4 py-2 rounded">New Report</button>
-                                        <button onClick={() => setCurrentView('choice')} className="text-gray-500 px-4 py-2 hover:underline">Exit</button>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-8">
-                                    <section>
-                                        <h2 className="text-lg font-bold border-b border-gray-300 mb-4 pb-2">General & Strategy</h2>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                                            <div><strong>Company:</strong> {vsmeData.b1_name}</div>
-                                            <div><strong>Basis:</strong> {vsmeData.b1_basis}</div>
-                                            <div><strong>Turnover:</strong> €{vsmeData.b1_turnover}</div>
-                                            <div><strong>Employees:</strong> {vsmeData.b1_employees}</div>
-                                            <div className="col-span-1 sm:col-span-2 mt-2"><strong>Transition Practices:</strong><p className="bg-gray-50 p-2 rounded mt-1">{vsmeData.b2_practices}</p></div>
-                                        </div>
-                                    </section>
-
-                                    <section>
-                                        <h2 className="text-lg font-bold border-b border-gray-300 mb-4 pb-2">Environment</h2>
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-                                            <div><strong>Energy Total:</strong> {vsmeData.b3_energy_total} MWh</div>
-                                            <div><strong>Renewable:</strong> {vsmeData.b3_energy_ren} MWh</div>
-                                            <div><strong>Scope 1:</strong> {vsmeData.b3_scope1} tCO2e</div>
-                                            <div><strong>Water:</strong> {vsmeData.b6_water} m3</div>
-                                            <div><strong>Haz. Waste:</strong> {vsmeData.b7_waste_haz} T</div>
-                                            <div><strong>Recycled:</strong> {vsmeData.b7_waste_recycled} T</div>
-                                        </div>
-                                    </section>
-
-                                    <section>
-                                        <h2 className="text-lg font-bold border-b border-gray-300 mb-4 pb-2">Social & Governance</h2>
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-                                            <div><strong>Perm. Staff:</strong> {vsmeData.b8_perm}</div>
-                                            <div><strong>Accidents:</strong> {vsmeData.b9_accidents}</div>
-                                            <div><strong>Min Wage:</strong> {vsmeData.b10_minwage}</div>
-                                            <div><strong>Convictions:</strong> {vsmeData.b11_convictions}</div>
-                                        </div>
-                                    </section>
-
-                                    {vsmeConfig.bpModule && (
-                                        <section className="bg-indigo-50 p-6 rounded-lg border border-indigo-100">
-                                            <h2 className="text-lg font-bold text-indigo-900 border-b border-indigo-200 mb-4 pb-2">Business Partner Module</h2>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                                                <div><strong>Supplier Code:</strong> {vsmeData.bp_code}</div>
-                                                <div><strong>Grievance Mech:</strong> {vsmeData.bp_grievance}</div>
-                                                <div><strong>Excluded Rev:</strong> {vsmeData.bp_excluded_rev}</div>
-                                                <div><strong>Scope 3 Status:</strong> {vsmeData.bp_scope3_status}</div>
-                                                <div className="col-span-1 sm:col-span-2"><strong>Climate Risks:</strong> {vsmeData.bp_climate_risks}</div>
-                                            </div>
-                                        </section>
-                                    )}
-
-                                    {vsmeConfig.comprehensive && (
-                                        <section className="bg-teal-50 p-6 rounded-lg border border-teal-100">
-                                            <h2 className="text-lg font-bold text-teal-900 border-b border-teal-200 mb-4 pb-2">Comprehensive Strategy</h2>
-                                            <div className="space-y-3 text-sm">
-                                                <div><strong>Strategy:</strong> {vsmeData.c1_strategy}</div>
-                                                <div><strong>Targets:</strong> {vsmeData.c3_targets}</div>
-                                                <div><strong>Mgmt Gender:</strong> {vsmeData.c5_mgmt_gender}</div>
-                                            </div>
-                                        </section>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    );
-                }
-
-                // Wizard View
-                if (vsmeView === 'wizard') {
-                    const step = vsmeStepsList[vsmeStepIndex];
-                    return (
-                        <div className="min-h-screen bg-slate-50 py-12 px-4 font-sans">
-                            <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-xl overflow-hidden">
-                                <div className="bg-blue-900 px-6 py-4 flex justify-between items-center text-white">
-                                    <h2 className="font-bold flex items-center gap-2"><FileBarChart /> VSME Generator</h2>
-                                    <span className="text-sm opacity-80">Step {vsmeStepIndex + 1}/{vsmeStepsList.length}</span>
-                                </div>
-                                
-                                {/* Progress Bar */}
-                                <div className="w-full bg-gray-200 h-1.5">
-                                    <div className="bg-blue-500 h-1.5 transition-all duration-300" style={{ width: `${((vsmeStepIndex + 1) / vsmeStepsList.length) * 100}%` }}></div>
-                                </div>
-
-                                <div className="p-4 md:p-8">
-                                    <div className="flex justify-end mb-4">
-                                         <button onClick={fillFakeVsmeData} type="button" className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200">🪄 Auto Fill Demo Data</button>
-                                    </div>
-
-                                    {/* Step Content */}
-                                    <div className="space-y-6">
-                                        {step === 'gen' && (
-                                            <div className="animate-fade-in">
-                                                <h3 className="text-xl font-bold mb-4">General Information</h3>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <input className="border p-2 rounded" placeholder="Legal Name" value={vsmeData.b1_name} onChange={(e)=>handleVsmeChange('b1_name', e.target.value)} />
-                                                    <input className="border p-2 rounded" placeholder="Legal Form" value={vsmeData.b1_legal_form} onChange={(e)=>handleVsmeChange('b1_legal_form', e.target.value)} />
-                                                    <input className="border p-2 rounded" placeholder="Turnover (€)" value={vsmeData.b1_turnover} onChange={(e)=>handleVsmeChange('b1_turnover', e.target.value)} />
-                                                    <input className="border p-2 rounded" placeholder="Employees" value={vsmeData.b1_employees} onChange={(e)=>handleVsmeChange('b1_employees', e.target.value)} />
-                                                    <textarea className="col-span-1 md:col-span-2 border p-2 rounded h-24" placeholder="Transition Practices (e.g. LED lights)" value={vsmeData.b2_practices} onChange={(e)=>handleVsmeChange('b2_practices', e.target.value)} />
-                                                </div>
-                                            </div>
-                                        )}
-                                        {step === 'env' && (
-                                            <div className="animate-fade-in">
-                                                <h3 className="text-xl font-bold mb-4">Environment (B3-B7)</h3>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <input type="number" className="border p-2 rounded" placeholder="Total Energy (MWh)" value={vsmeData.b3_energy_total} onChange={(e)=>handleVsmeChange('b3_energy_total', e.target.value)} />
-                                                    <input type="number" className="border p-2 rounded" placeholder="Scope 1 (tCO2e)" value={vsmeData.b3_scope1} onChange={(e)=>handleVsmeChange('b3_scope1', e.target.value)} />
-                                                    <input type="number" className="border p-2 rounded" placeholder="Water (m3)" value={vsmeData.b6_water} onChange={(e)=>handleVsmeChange('b6_water', e.target.value)} />
-                                                    <input type="number" className="border p-2 rounded" placeholder="Haz. Waste (T)" value={vsmeData.b7_waste_haz} onChange={(e)=>handleVsmeChange('b7_waste_haz', e.target.value)} />
-                                                </div>
-                                            </div>
-                                        )}
-                                        {step === 'soc' && (
-                                            <div className="animate-fade-in">
-                                                <h3 className="text-xl font-bold mb-4">Social (B8-B10)</h3>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <input type="number" className="border p-2 rounded" placeholder="Perm. Employees" value={vsmeData.b8_perm} onChange={(e)=>handleVsmeChange('b8_perm', e.target.value)} />
-                                                    <input type="number" className="border p-2 rounded" placeholder="Accidents" value={vsmeData.b9_accidents} onChange={(e)=>handleVsmeChange('b9_accidents', e.target.value)} />
-                                                </div>
-                                            </div>
-                                        )}
-                                        {step === 'gov' && (
-                                            <div className="animate-fade-in">
-                                                <h3 className="text-xl font-bold mb-4">Governance (B11)</h3>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <input type="number" className="border p-2 rounded" placeholder="Convictions" value={vsmeData.b11_convictions} onChange={(e)=>handleVsmeChange('b11_convictions', e.target.value)} />
-                                                </div>
-                                            </div>
-                                        )}
-                                        {step === 'bp' && (
-                                            <div className="animate-fade-in bg-indigo-50 p-4 rounded-lg">
-                                                <h3 className="text-xl font-bold mb-4 text-indigo-900">Business Partners Module</h3>
-                                                <div className="grid grid-cols-1 gap-4">
-                                                    <select className="border p-2 rounded" value={vsmeData.bp_code} onChange={(e)=>handleVsmeChange('bp_code', e.target.value)}>
-                                                        <option value="Yes">Supplier Code: Yes</option><option value="No">Supplier Code: No</option>
-                                                    </select>
-                                                    <input className="border p-2 rounded" placeholder="Excluded Revenue (%)" value={vsmeData.bp_excluded_rev} onChange={(e)=>handleVsmeChange('bp_excluded_rev', e.target.value)} />
-                                                    <textarea className="border p-2 rounded h-20" placeholder="Climate Risks" value={vsmeData.bp_climate_risks} onChange={(e)=>handleVsmeChange('bp_climate_risks', e.target.value)} />
-                                                </div>
-                                            </div>
-                                        )}
-                                        {step === 'c1' && (
-                                            <div className="animate-fade-in bg-teal-50 p-4 rounded-lg">
-                                                <h3 className="text-xl font-bold mb-4 text-teal-900">Comprehensive Strategy</h3>
-                                                <textarea className="w-full border p-2 rounded h-32 mb-4" placeholder="Business Strategy" value={vsmeData.c1_strategy} onChange={(e)=>handleVsmeChange('c1_strategy', e.target.value)} />
-                                                <textarea className="w-full border p-2 rounded h-32" placeholder="GHG Targets" value={vsmeData.c3_targets} onChange={(e)=>handleVsmeChange('c3_targets', e.target.value)} />
-                                            </div>
-                                        )}
-                                        {/* Skipping C2 for brevity in this simplified view, can act as C1+C2 */}
-                                        {step === 'generate' && (
-                                            <div className="text-center py-10 animate-fade-in">
-                                                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                                                    <CheckCircle className="w-10 h-10 text-green-600" />
-                                                </div>
-                                                <h3 className="text-2xl font-bold mb-2">Ready to Generate</h3>
-                                                <p className="text-gray-600 mb-8">All required data has been collected.</p>
-                                                <button onClick={() => setVsmeView('report')} className="bg-green-600 text-white px-8 py-3 rounded-lg font-bold shadow-lg hover:bg-green-700">
-                                                    Generate Report
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Nav Buttons */}
-                                    {step !== 'generate' && (
-                                        <div className="flex justify-between mt-8 pt-4 border-t">
-                                            <button onClick={() => {
-                                                if(vsmeStepIndex > 0) setVsmeStepIndex(vsmeStepIndex - 1);
-                                                else setVsmeView('setup');
-                                            }} className="text-gray-500 font-semibold hover:text-gray-800">Back</button>
-                                            <button onClick={() => setVsmeStepIndex(vsmeStepIndex + 1)} className="bg-blue-900 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-800">
-                                                Next Step
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    );
-                }
-
-                // Setup View (Screening)
-                return (
-                    <div className="min-h-screen bg-slate-50 py-12 px-4 font-sans flex items-center justify-center">
-                        <div className="max-w-2xl w-full bg-white rounded-xl shadow-xl p-6 md:p-8 border-t-4 border-blue-600">
-                            <div className="mb-8">
-                                <button onClick={() => setCurrentView('choice')} className="text-sm text-gray-400 mb-4 hover:text-gray-600">← Back to Hub</button>
-                                <h1 className="text-3xl font-bold text-gray-900 mb-2">VSME Wizard Setup</h1>
-                                <p className="text-gray-600">Determine required reporting modules.</p>
-                            </div>
-
-                            <div className="space-y-6">
-                                <div className="bg-gray-50 p-4 rounded-lg border">
-                                    <label className="block font-bold mb-2">1. Are you listed on an EU market?</label>
-                                    <div className="flex flex-col sm:flex-row gap-4">
-                                        <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="isListed" value="yes" checked={vsmeData.isListed === 'yes'} onChange={(e)=>handleVsmeChange('isListed', e.target.value)} /> Yes</label>
-                                        <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="isListed" value="no" checked={vsmeData.isListed === 'no'} onChange={(e)=>handleVsmeChange('isListed', e.target.value)} /> No</label>
-                                    </div>
-                                    {vsmeData.isListed === 'yes' && <p className="text-red-500 text-sm mt-2 font-bold">⛔ Stop: You require full ESRS LSME.</p>}
-                                </div>
-
-                                <div className="bg-gray-50 p-4 rounded-lg border">
-                                    <label className="block font-bold mb-2">2. Report Purpose?</label>
-                                    <select className="w-full border p-2 rounded bg-white" value={vsmeData.reportPurpose} onChange={(e)=>handleVsmeChange('reportPurpose', e.target.value)}>
-                                        <option value="basic">Internal Transparency (Basic)</option>
-                                        <option value="partner">Bank / Partner Request (Basic + BP)</option>
-                                    </select>
-                                </div>
-
-                                <div className="bg-gray-50 p-4 rounded-lg border">
-                                    <label className="block font-bold mb-2">3. Formal Policies & Targets?</label>
-                                    <div className="flex flex-col sm:flex-row gap-4">
-                                        <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="hasPolicies" value="no" checked={vsmeData.hasPolicies === 'no'} onChange={(e)=>handleVsmeChange('hasPolicies', e.target.value)} /> No (Basic)</label>
-                                        <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="hasPolicies" value="yes" checked={vsmeData.hasPolicies === 'yes'} onChange={(e)=>handleVsmeChange('hasPolicies', e.target.value)} /> Yes (Comprehensive)</label>
-                                    </div>
-                                </div>
-
-                                <button 
-                                    onClick={startVsmeApp} 
-                                    disabled={vsmeData.isListed === 'yes'}
-                                    className={`w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow-lg hover:bg-blue-700 transition ${vsmeData.isListed === 'yes' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                >
-                                    Start Assessment
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                );
-            };
-
-            const renderSubsidyFinder = () => {
-                return (
-                <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 font-sans">
-                    <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
-                    
-                    {/* Header */}
-                    <div className="bg-blue-900 px-4 py-4 md:px-8 md:py-6 flex justify-between items-center text-white">
-                        <h2 className="text-xl font-bold flex items-center gap-2">
-                        <Calculator className="w-6 h-6 text-green-400" />
-                        Demandio Subsidy Finder
-                        </h2>
-                        <div className="text-sm opacity-80">Step {subsidyStep > 4 ? subsidyStep - 1 : subsidyStep} / 5</div>
-                    </div>
-
-                    {/* Progress Bar */}
-                    <div className="w-full bg-gray-200 h-2">
-                        <div className="bg-green-500 h-2 transition-all duration-500" style={{ width: `${(subsidyStep > 4 ? (subsidyStep-1)/5 : subsidyStep/5)*100}%` }}></div>
-                    </div>
-
-                    <div className="p-4 md:p-8">
-                        <button onClick={() => setCurrentView('choice')} className="text-sm text-gray-400 mb-4 hover:text-gray-600">← Back to Hub</button>
-                        {/* STEP 1: Gatekeeper */}
-                        {subsidyStep === 1 && (
-                        <div className="animate-fade-in">
-                            <div className="mb-6 flex justify-center">
-                                <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center">
-                                <ShieldCheck className="w-10 h-10 text-blue-600" />
-                                </div>
-                            </div>
-                            <h3 className="text-2xl font-bold text-center mb-4 text-gray-900">{tt.step1.title}</h3>
-                            <p className="text-gray-600 text-center mb-8">{tt.step1.msg}</p>
-                            
-                            <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 mb-8">
-                            <p className="font-bold text-lg mb-4 text-blue-900">{tt.step1.q}</p>
-                            <div className="space-y-3">
-                                <button 
-                                onClick={() => { setSubsidyData({...subsidyData, hasEH3: true}); setSubsidyStep(2); }}
-                                className="w-full text-left px-4 py-3 bg-white border border-gray-200 rounded-lg hover:border-blue-500 hover:shadow-md transition flex items-center gap-2"
-                                >
-                                <CheckCircle className="w-5 h-5 text-green-500" /> {tt.step1.yes}
-                                </button>
-                                <button 
-                                onClick={() => setSubsidyData({...subsidyData, hasEH3: false})}
-                                className="w-full text-left px-4 py-3 bg-white border border-gray-200 rounded-lg hover:border-red-500 hover:shadow-md transition flex items-center gap-2"
-                                >
-                                <X className="w-5 h-5 text-red-500" /> {tt.step1.no}
-                                </button>
-                            </div>
-                            </div>
-
-                            {subsidyData.hasEH3 === false && (
-                            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg mb-4 flex gap-3">
-                                <AlertTriangle className="w-6 h-6 text-yellow-600 flex-shrink-0" />
-                                <div>
-                                <p className="text-sm text-yellow-800">{tt.step1.alert}</p>
-                                <button onClick={() => setSubsidyStep(2)} className="text-blue-600 font-bold text-sm mt-2 hover:underline">
-                                    Continue Check &rarr;
-                                </button>
-                                </div>
-                            </div>
-                            )}
-                        </div>
-                        )}
-
-                        {/* STEP 2: 90-Day Rule */}
-                        {subsidyStep === 2 && (
-                        <div className="animate-fade-in">
-                            <div className="mb-6 flex justify-center">
-                                <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center">
-                                <Calendar className="w-10 h-10 text-orange-600" />
-                                </div>
-                            </div>
-                            <h3 className="text-2xl font-bold text-center mb-4 text-gray-900">{tt.step2.title}</h3>
-                            <p className="text-gray-600 text-center mb-8">{tt.step2.msg}</p>
-
-                            <div className="space-y-4 max-w-lg mx-auto">
-                                <p className="font-bold text-lg mb-2 text-gray-900">{tt.step2.q}</p>
-                                <button 
-                                onClick={() => { setSubsidyData({...subsidyData, recentPurchase: true}); setSubsidyStep(3); }}
-                                className="w-full text-left px-6 py-4 bg-white border-2 border-gray-100 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition font-medium"
-                                >
-                                {tt.step2.yes}
-                                </button>
-                                <button 
-                                onClick={() => { setSubsidyData({...subsidyData, recentPurchase: false}); setSubsidyStep(3); }}
-                                className="w-full text-left px-6 py-4 bg-white border-2 border-gray-100 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition font-medium"
-                                >
-                                {tt.step2.no}
-                                </button>
-                            </div>
-                            
-                            <div className="mt-8 flex justify-between">
-                            <button onClick={() => setSubsidyStep(1)} className="text-gray-400 hover:text-gray-600">{tt.back}</button>
-                            </div>
-                        </div>
-                        )}
-
-                        {/* STEP 3: Categories & Embedded Questions */}
-                        {subsidyStep === 3 && (
-                        <div className="animate-fade-in">
-                            <h3 className="text-2xl font-bold text-center mb-4 text-gray-900">{tt.step3.title}</h3>
-                            <p className="text-gray-600 text-center mb-8">{tt.step3.msg}</p>
-
-                            <div className="grid grid-cols-1 gap-4 mb-8">
-                            {/* EV SECTION */}
-                            <div className={`rounded-xl border-2 transition-all ${subsidyData.categories.includes('ev') ? 'border-blue-500 bg-blue-50/50' : 'border-gray-200 hover:border-blue-300'}`}>
-                                <div 
-                                onClick={() => handleCategoryToggle('ev')}
-                                className="cursor-pointer p-4 flex items-center gap-3"
-                                >
-                                <div className={`p-2 rounded-lg ${subsidyData.categories.includes('ev') ? 'bg-blue-200' : 'bg-gray-100'}`}>
-                                    <Zap className="w-6 h-6 text-gray-700" />
-                                </div>
-                                <span className="font-semibold text-lg">{tt.step3.opt_ev}</span>
-                                {subsidyData.categories.includes('ev') && <CheckCircle className="ml-auto w-6 h-6 text-blue-600" />}
-                                </div>
-                                
-                                {/* Embedded Questions for EV */}
-                                {subsidyData.categories.includes('ev') && (
-                                <div className="px-4 pb-4 pt-0 animate-fade-in">
-                                    <div className="bg-white p-4 rounded-lg border border-blue-100 shadow-sm mt-2 ml-4 md:ml-12">
-                                       <p className="text-sm font-bold text-gray-800 mb-2">{tt.step3.q_ev}</p>
-                                       <div className="flex gap-2">
-                                         <button onClick={() => setSubsidyData({...subsidyData, invoiceValue: true})} className={`px-3 py-1 text-sm rounded-md border transition ${subsidyData.invoiceValue === true ? 'bg-blue-600 text-white border-blue-600' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'}`}>{tt.yes}</button>
-                                         <button onClick={() => setSubsidyData({...subsidyData, invoiceValue: false})} className={`px-3 py-1 text-sm rounded-md border transition ${subsidyData.invoiceValue === false ? 'bg-blue-600 text-white border-blue-600' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'}`}>{tt.no}</button>
-                                       </div>
-                                    </div>
-                                </div>
-                                )}
-                            </div>
-
-                            {/* FLEET SECTION */}
-                            <div className={`rounded-xl border-2 transition-all ${subsidyData.categories.includes('fleet') ? 'border-orange-500 bg-orange-50/50' : 'border-gray-200 hover:border-orange-300'}`}>
-                                <div 
-                                onClick={() => handleCategoryToggle('fleet')}
-                                className="cursor-pointer p-4 flex items-center gap-3"
-                                >
-                                <div className={`p-2 rounded-lg ${subsidyData.categories.includes('fleet') ? 'bg-orange-200' : 'bg-gray-100'}`}>
-                                    <Truck className="w-6 h-6 text-gray-700" />
-                                </div>
-                                <span className="font-semibold text-lg">{tt.step3.opt_fleet}</span>
-                                {subsidyData.categories.includes('fleet') && <CheckCircle className="ml-auto w-6 h-6 text-orange-600" />}
-                                </div>
-                                
-                                {/* Embedded Questions for Fleet */}
-                                {subsidyData.categories.includes('fleet') && (
-                                <div className="px-4 pb-4 pt-0 animate-fade-in">
-                                    <div className="bg-white p-4 rounded-lg border border-orange-100 shadow-sm mt-2 ml-4 md:ml-12 space-y-4">
-                                       <div>
-                                         <p className="text-sm font-bold text-gray-800 mb-2">{tt.step3.q_fleet_electric}</p>
-                                         <div className="flex gap-2">
-                                           <button onClick={() => setSubsidyData({...subsidyData, isElectricVehicle: true})} className={`px-3 py-1 text-sm rounded-md border transition ${subsidyData.isElectricVehicle === true ? 'bg-orange-500 text-white border-orange-500' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'}`}>{tt.yes}</button>
-                                           <button onClick={() => setSubsidyData({...subsidyData, isElectricVehicle: false})} className={`px-3 py-1 text-sm rounded-md border transition ${subsidyData.isElectricVehicle === false ? 'bg-orange-500 text-white border-orange-500' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'}`}>{tt.no}</button>
-                                         </div>
-                                       </div>
-                                       <div>
-                                         <p className="text-sm font-bold text-gray-800 mb-2">{tt.step3.q_fleet_weight}</p>
-                                         <div className="flex gap-2">
-                                           <button onClick={() => setSubsidyData({...subsidyData, isHeavyVehicle: true})} className={`px-3 py-1 text-sm rounded-md border transition ${subsidyData.isHeavyVehicle === true ? 'bg-orange-500 text-white border-orange-500' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'}`}>{tt.yes}</button>
-                                           <button onClick={() => setSubsidyData({...subsidyData, isHeavyVehicle: false})} className={`px-3 py-1 text-sm rounded-md border transition ${subsidyData.isHeavyVehicle === false ? 'bg-orange-500 text-white border-orange-500' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'}`}>{tt.no}</button>
-                                         </div>
-                                       </div>
-                                    </div>
-                                </div>
-                                )}
-                            </div>
-
-                            {/* BUILDING SECTION (No questions) */}
-                            <div className={`rounded-xl border-2 transition-all ${subsidyData.categories.includes('building') ? 'border-green-500 bg-green-50/50' : 'border-gray-200 hover:border-green-300'}`}>
-                                <div 
-                                onClick={() => handleCategoryToggle('building')}
-                                className="cursor-pointer p-4 flex items-center gap-3"
-                                >
-                                <div className={`p-2 rounded-lg ${subsidyData.categories.includes('building') ? 'bg-green-200' : 'bg-gray-100'}`}>
-                                    <Home className="w-6 h-6 text-gray-700" />
-                                </div>
-                                <span className="font-semibold text-lg">{tt.step3.opt_building}</span>
-                                {subsidyData.categories.includes('building') && <CheckCircle className="ml-auto w-6 h-6 text-green-600" />}
-                                </div>
-                            </div>
-
-                            {/* TRAINING SECTION */}
-                            <div className={`rounded-xl border-2 transition-all ${subsidyData.categories.includes('training') ? 'border-purple-500 bg-purple-50/50' : 'border-gray-200 hover:border-purple-300'}`}>
-                                <div 
-                                onClick={() => handleCategoryToggle('training')}
-                                className="cursor-pointer p-4 flex items-center gap-3"
-                                >
-                                <div className={`p-2 rounded-lg ${subsidyData.categories.includes('training') ? 'bg-purple-200' : 'bg-gray-100'}`}>
-                                    <GraduationCap className="w-6 h-6 text-gray-700" />
-                                </div>
-                                <span className="font-semibold text-lg">{tt.step3.opt_training}</span>
-                                {subsidyData.categories.includes('training') && <CheckCircle className="ml-auto w-6 h-6 text-purple-600" />}
-                                </div>
-
-                                 {/* Embedded Questions for Training */}
-                                 {subsidyData.categories.includes('training') && (
-                                  <div className="px-4 pb-4 pt-0 animate-fade-in">
-                                    <div className="bg-white p-4 rounded-lg border border-purple-100 shadow-sm mt-2 ml-4 md:ml-12">
-                                       <p className="text-sm font-bold text-gray-800 mb-2">{tt.step3.q_training}</p>
-                                       <div className="flex gap-2">
-                                         <button onClick={() => setSubsidyData({...subsidyData, smallStaff: true})} className={`px-3 py-1 text-sm rounded-md border transition ${subsidyData.smallStaff === true ? 'bg-purple-600 text-white border-purple-600' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'}`}>{tt.yes}</button>
-                                         <button onClick={() => setSubsidyData({...subsidyData, smallStaff: false})} className={`px-3 py-1 text-sm rounded-md border transition ${subsidyData.smallStaff === false ? 'bg-purple-600 text-white border-purple-600' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'}`}>{tt.no}</button>
-                                       </div>
-                                    </div>
-                                  </div>
-                                )}
-                            </div>
-
-                            </div>
-                            
-                            <div className="flex justify-between items-center">
-                            <button onClick={() => setSubsidyStep(2)} className="text-gray-400 hover:text-gray-600">{tt.back}</button>
-                            <button 
-                                onClick={nextFromStep3}
-                                className="bg-blue-900 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-800 transition shadow-lg"
-                            >
-                                {tt.next} &rarr;
-                            </button>
-                            </div>
-                        </div>
-                        )}
-
-                        {/* STEP 5: Results (Now logically step 4) */}
-                        {subsidyStep === 5 && (
-                        <div className="animate-fade-in">
-                             <div className="text-center mb-8">
-                               <h3 className="text-2xl font-bold text-gray-900 mb-2">{tt.step5.title}</h3>
-                               <p className="text-gray-600">{tt.step5.msg}</p>
-                             </div>
-
-                             <div className="grid gap-4 mb-8">
-                                {calculateSubsidies().map((item, index) => (
-                                  <div key={index} className="bg-white border-2 border-green-500 p-6 rounded-xl shadow-lg relative overflow-hidden group hover:scale-105 transition-transform">
-                                    <div className="absolute top-0 right-0 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">ELIGIBLE</div>
-                                    <h4 className="text-xl font-extrabold text-blue-900 mb-2 flex items-center gap-2">
-                                      <CheckCircle className="text-green-500" /> {item.title}
-                                    </h4>
-                                    <p className="text-gray-600 font-medium">{item.desc}</p>
-                                  </div>
-                                ))}
-                                
-                                {calculateSubsidies().length === 0 && (
-                                  <div className="bg-gray-50 p-6 rounded-xl text-center border border-gray-200">
-                                    <p>Based on inputs, no specific standard subsidies match, but contact us for a custom check.</p>
-                                  </div>
-                                )}
-                             </div>
-
-                             <button 
-                                onClick={() => setSubsidyStep(6)}
-                                className="w-full bg-green-500 text-blue-900 px-8 py-4 rounded-xl font-bold hover:bg-green-400 transition shadow-lg text-lg animate-pulse"
-                              >
-                                Claim Opportunities &rarr;
-                              </button>
-                        </div>
-                        )}
-
-                         {/* STEP 6: CTA */}
-                         {subsidyStep === 6 && (
-                          <div className="animate-fade-in text-center">
-                             <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                               <Euro className="w-12 h-12 text-green-600" />
-                             </div>
-                             <h3 className="text-3xl font-extrabold text-gray-900 mb-4">{tt.step6.title}</h3>
-                             <p className="text-gray-600 mb-8 text-lg">{tt.step6.msg}</p>
-
-                             <div className="grid gap-4 max-w-md mx-auto">
-                               <button className="flex items-center justify-center gap-3 bg-blue-900 text-white p-4 rounded-xl font-bold hover:bg-blue-800 transition shadow-lg">
-                                  <FileText /> {tt.step6.btn_esg}
-                               </button>
-                               <button className="flex items-center justify-center gap-3 bg-white text-blue-900 border-2 border-blue-900 p-4 rounded-xl font-bold hover:bg-blue-50 transition">
-                                  <Send /> {tt.step6.btn_acc}
-                               </button>
-                               <button className="flex items-center justify-center gap-3 bg-gray-100 text-gray-700 p-4 rounded-xl font-bold hover:bg-gray-200 transition">
-                                  <HelpCircle /> {tt.step6.btn_consult}
-                               </button>
-                             </div>
-                             
-                             <div className="mt-8 pt-8 border-t border-gray-100">
-                                <button onClick={() => window.location.reload()} className="text-sm text-gray-400 hover:text-gray-600">Back to Home</button>
-                             </div>
-                          </div>
-                        )}
-
-                    </div>
-                    </div>
-                </div>
-                );
-            };
-
-            // Main Render Switch
-            if (currentView === 'choice') {
-                return renderChoiceSection();
-            }
-            
-            if (currentView === 'subsidy_tool') {
-                return renderSubsidyFinder();
-            }
-
-            if (currentView === 'vsme_tool') {
-                return renderVSMETool();
-            }
-
-            // --- LANDING PAGE RENDER ---
             return (
                 <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
                 {/* Navigation */}
@@ -1139,6 +378,7 @@
                         {/* Desktop Nav */}
                         <div className="hidden md:flex items-center space-x-8">
                         <a href="#roles" className="text-gray-600 hover:text-blue-600 font-medium">{t.nav.solutions}</a>
+                        <a href="#pillars" className="text-gray-600 hover:text-blue-600 font-medium">{t.nav.pillars}</a>
                         <a href="#news" className="text-gray-600 hover:text-blue-600 font-medium">{t.nav.news}</a>
                         <a href="#subsidyroadmap" className="text-gray-600 hover:text-blue-600 font-medium">{t.nav.subsidy_guide}</a>
                         <button 
@@ -1172,6 +412,7 @@
                     {mobileMenuOpen && (
                     <div className="md:hidden bg-white border-t p-4 space-y-4">
                         <a href="#roles" className="block text-gray-600 font-medium">{t.nav.solutions}</a>
+                        <a href="#pillars" className="block text-gray-600 font-medium">{t.nav.pillars}</a>
                         <a href="#news" className="block text-gray-600 font-medium">{t.nav.news}</a>
                         <a href="#contact" className="block text-blue-600 font-bold">{t.nav.contact}</a>
                     </div>
@@ -1194,28 +435,28 @@
                     
                     <div className="flex justify-center mb-16">
                         <button 
-                        onClick={() => document.getElementById('contact').scrollIntoView({behavior: 'smooth'})}
+                        onClick={() => document.getElementById('roles').scrollIntoView({behavior: 'smooth'})}
                         className="bg-green-500 hover:bg-green-400 text-slate-900 text-lg font-bold py-4 px-8 rounded-full shadow-lg transform hover:scale-105 transition-all flex items-center gap-3"
                         >
-                        <Calculator className="w-5 h-5" />
+                        <Network className="w-5 h-5" />
                         {t.hero.cta}
                         </button>
                     </div>
 
                     {/* Social Proof Badges & Stats */}
                     <div className="border-t border-white/10 pt-8 mt-8">
-                        <div className="flex flex-col md:flex-row justify-between items-center gap-8 text-blue-200 text-sm font-semibold max-w-4xl mx-auto">
-                           <div className="flex items-center gap-2">
+                        <div className="flex flex-col md:flex-row justify-between items-center gap-8 text-blue-200 text-sm font-semibold max-w-4xl mx-auto text-center md:text-left">
+                           <div className="flex items-center justify-center md:justify-start gap-2">
                              <TrendingUp className="w-5 h-5 text-green-400" />
-                             {t.stats.claimed}
+                             {t.stats.stat1}
                            </div>
-                           <div className="flex items-center gap-2">
-                             <Users className="w-5 h-5 text-blue-400" />
-                             {t.stats.garages}
+                           <div className="flex items-center justify-center md:justify-start gap-2">
+                             <Network className="w-5 h-5 text-blue-400" />
+                             {t.stats.stat2}
                            </div>
-                           <div className="flex items-center gap-2">
-                             <ShieldCheck className="w-5 h-5 text-yellow-400" />
-                             {t.trust_badges.bovag}
+                           <div className="flex items-center justify-center md:justify-start gap-2">
+                             <BarChart3 className="w-5 h-5 text-yellow-400" />
+                             {t.stats.stat3}
                            </div>
                         </div>
                     </div>
@@ -1223,73 +464,125 @@
                 </div>
 
                 {/* Role Selection Section */}
-                <div id="roles" className="py-20 bg-white">
+                <div id="roles" className="py-20 bg-gray-50 border-t border-gray-200">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-12">
-                        <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-wider">{t.roles.title}</h2>
+                        <h2 className="text-3xl font-bold text-gray-900 tracking-tight">{t.roles.title}</h2>
                     </div>
                     
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                        <button 
-                        onClick={() => handleRoleSelect('garage_owner')}
-                        className={`p-6 rounded-xl border-2 transition-all duration-300 text-center flex flex-col items-center hover:shadow-lg
-                            ${activeRole === 'garage_owner' 
-                            ? 'bg-blue-50 border-blue-600 text-blue-900 shadow-md scale-105 z-10' 
-                            : 'bg-white border-gray-100 text-gray-600 hover:border-blue-200'}`}
-                        >
-                        <Briefcase className={`w-10 h-10 mb-4 ${activeRole === 'garage_owner' ? 'text-blue-600' : 'text-gray-400'}`} />
-                        <h3 className="font-bold text-lg">{t.roles.garage_owner}</h3>
-                        </button>
+                    {/* Operational Team Section */}
+                    <div className="mb-12">
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="h-px bg-gray-300 flex-grow"></div>
+                            <h3 className="text-lg font-bold text-gray-500 uppercase tracking-widest">{t.roles.section_operational}</h3>
+                            <div className="h-px bg-gray-300 flex-grow"></div>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                            <button 
+                            onClick={() => handleRoleSelect('garage_owner')}
+                            className={`p-6 rounded-xl border-2 transition-all duration-300 text-center flex flex-col items-center hover:shadow-lg bg-white
+                                ${activeRole === 'garage_owner' 
+                                ? 'border-blue-600 text-blue-900 shadow-md scale-105 z-10 ring-2 ring-blue-100' 
+                                : 'border-gray-100 text-gray-600 hover:border-blue-200'}`}
+                            >
+                            <Briefcase className={`w-10 h-10 mb-4 ${activeRole === 'garage_owner' ? 'text-blue-600' : 'text-gray-400'}`} />
+                            <h3 className="font-bold text-lg">{t.roles.garage_owner}</h3>
+                            </button>
 
-                        <button 
-                        onClick={() => handleRoleSelect('advisor')}
-                        className={`p-6 rounded-xl border-2 transition-all duration-300 text-center flex flex-col items-center hover:shadow-lg
-                            ${activeRole === 'advisor' 
-                            ? 'bg-blue-50 border-blue-600 text-blue-900 shadow-md scale-105 z-10' 
-                            : 'bg-white border-gray-100 text-gray-600 hover:border-blue-200'}`}
-                        >
-                        <Car className={`w-10 h-10 mb-4 ${activeRole === 'advisor' ? 'text-blue-600' : 'text-gray-400'}`} />
-                        <h3 className="font-bold text-lg">{t.roles.advisor}</h3>
-                        </button>
+                            <button 
+                            onClick={() => handleRoleSelect('advisor')}
+                            className={`p-6 rounded-xl border-2 transition-all duration-300 text-center flex flex-col items-center hover:shadow-lg bg-white
+                                ${activeRole === 'advisor' 
+                                ? 'border-blue-600 text-blue-900 shadow-md scale-105 z-10 ring-2 ring-blue-100' 
+                                : 'border-gray-100 text-gray-600 hover:border-blue-200'}`}
+                            >
+                            <Car className={`w-10 h-10 mb-4 ${activeRole === 'advisor' ? 'text-blue-600' : 'text-gray-400'}`} />
+                            <h3 className="font-bold text-lg">{t.roles.advisor}</h3>
+                            </button>
 
-                        <button 
-                        onClick={() => handleRoleSelect('mechanic')}
-                        className={`p-6 rounded-xl border-2 transition-all duration-300 text-center flex flex-col items-center hover:shadow-lg
-                            ${activeRole === 'mechanic' 
-                            ? 'bg-blue-50 border-blue-600 text-blue-900 shadow-md scale-105 z-10' 
-                            : 'bg-white border-gray-100 text-gray-600 hover:border-blue-200'}`}
-                        >
-                        <Wrench className={`w-10 h-10 mb-4 ${activeRole === 'mechanic' ? 'text-blue-600' : 'text-gray-400'}`} />
-                        <h3 className="font-bold text-lg">{t.roles.mechanic}</h3>
-                        </button>
+                            <button 
+                            onClick={() => handleRoleSelect('mechanic')}
+                            className={`p-6 rounded-xl border-2 transition-all duration-300 text-center flex flex-col items-center hover:shadow-lg bg-white
+                                ${activeRole === 'mechanic' 
+                                ? 'border-blue-600 text-blue-900 shadow-md scale-105 z-10 ring-2 ring-blue-100' 
+                                : 'border-gray-100 text-gray-600 hover:border-blue-200'}`}
+                            >
+                            <Wrench className={`w-10 h-10 mb-4 ${activeRole === 'mechanic' ? 'text-blue-600' : 'text-gray-400'}`} />
+                            <h3 className="font-bold text-lg">{t.roles.mechanic}</h3>
+                            </button>
 
-                        <button 
-                        onClick={() => handleRoleSelect('warehouse')}
-                        className={`p-6 rounded-xl border-2 transition-all duration-300 text-center flex flex-col items-center hover:shadow-lg
-                            ${activeRole === 'warehouse' 
-                            ? 'bg-blue-50 border-blue-600 text-blue-900 shadow-md scale-105 z-10' 
-                            : 'bg-white border-gray-100 text-gray-600 hover:border-blue-200'}`}
-                        >
-                        <Package className={`w-10 h-10 mb-4 ${activeRole === 'warehouse' ? 'text-blue-600' : 'text-gray-400'}`} />
-                        <h3 className="font-bold text-lg">{t.roles.warehouse}</h3>
-                        </button>
+                            <button 
+                            onClick={() => handleRoleSelect('warehouse')}
+                            className={`p-6 rounded-xl border-2 transition-all duration-300 text-center flex flex-col items-center hover:shadow-lg bg-white
+                                ${activeRole === 'warehouse' 
+                                ? 'border-blue-600 text-blue-900 shadow-md scale-105 z-10 ring-2 ring-blue-100' 
+                                : 'border-gray-100 text-gray-600 hover:border-blue-200'}`}
+                            >
+                            <Package className={`w-10 h-10 mb-4 ${activeRole === 'warehouse' ? 'text-blue-600' : 'text-gray-400'}`} />
+                            <h3 className="font-bold text-lg">{t.roles.warehouse}</h3>
+                            </button>
 
-                        <button 
-                        onClick={() => handleRoleSelect('financial')}
-                        className={`p-6 rounded-xl border-2 transition-all duration-300 text-center flex flex-col items-center hover:shadow-lg
-                            ${activeRole === 'financial' 
-                            ? 'bg-blue-50 border-blue-600 text-blue-900 shadow-md scale-105 z-10' 
-                            : 'bg-white border-gray-100 text-gray-600 hover:border-blue-200'}`}
-                        >
-                        <Euro className={`w-10 h-10 mb-4 ${activeRole === 'financial' ? 'text-blue-600' : 'text-gray-400'}`} />
-                        <h3 className="font-bold text-lg">{t.roles.financial}</h3>
-                        </button>
+                            <button 
+                            onClick={() => handleRoleSelect('financial')}
+                            className={`p-6 rounded-xl border-2 transition-all duration-300 text-center flex flex-col items-center hover:shadow-lg bg-white
+                                ${activeRole === 'financial' 
+                                ? 'border-blue-600 text-blue-900 shadow-md scale-105 z-10 ring-2 ring-blue-100' 
+                                : 'border-gray-100 text-gray-600 hover:border-blue-200'}`}
+                            >
+                            <Euro className={`w-10 h-10 mb-4 ${activeRole === 'financial' ? 'text-blue-600' : 'text-gray-400'}`} />
+                            <h3 className="font-bold text-lg">{t.roles.financial}</h3>
+                            </button>
+                        </div>
                     </div>
+
+                    {/* Strategic Partners Section */}
+                    <div>
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="h-px bg-indigo-200 flex-grow"></div>
+                            <h3 className="text-lg font-bold text-indigo-500 uppercase tracking-widest">{t.roles.section_strategic}</h3>
+                            <div className="h-px bg-indigo-200 flex-grow"></div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                            <button 
+                            onClick={() => handleRoleSelect('formula_manager')}
+                            className={`p-6 rounded-xl border-2 transition-all duration-300 text-center flex flex-col items-center hover:shadow-lg bg-white
+                                ${activeRole === 'formula_manager' 
+                                ? 'border-indigo-600 text-indigo-900 shadow-md scale-105 z-10 ring-2 ring-indigo-100' 
+                                : 'border-indigo-50 text-gray-600 hover:border-indigo-300'}`}
+                            >
+                            <Network className={`w-12 h-12 mb-4 ${activeRole === 'formula_manager' ? 'text-indigo-600' : 'text-indigo-400'}`} />
+                            <h3 className="font-bold text-lg">{t.roles.formula_manager}</h3>
+                            </button>
+
+                            <button 
+                            onClick={() => handleRoleSelect('association')}
+                            className={`p-6 rounded-xl border-2 transition-all duration-300 text-center flex flex-col items-center hover:shadow-lg bg-white
+                                ${activeRole === 'association' 
+                                ? 'border-indigo-600 text-indigo-900 shadow-md scale-105 z-10 ring-2 ring-indigo-100' 
+                                : 'border-indigo-50 text-gray-600 hover:border-indigo-300'}`}
+                            >
+                            <Landmark className={`w-12 h-12 mb-4 ${activeRole === 'association' ? 'text-indigo-600' : 'text-indigo-400'}`} />
+                            <h3 className="font-bold text-lg">{t.roles.association}</h3>
+                            </button>
+
+                            <button 
+                            onClick={() => handleRoleSelect('wholesaler')}
+                            className={`p-6 rounded-xl border-2 transition-all duration-300 text-center flex flex-col items-center hover:shadow-lg bg-white
+                                ${activeRole === 'wholesaler' 
+                                ? 'border-indigo-600 text-indigo-900 shadow-md scale-105 z-10 ring-2 ring-indigo-100' 
+                                : 'border-indigo-50 text-gray-600 hover:border-indigo-300'}`}
+                            >
+                            <Factory className={`w-12 h-12 mb-4 ${activeRole === 'wholesaler' ? 'text-indigo-600' : 'text-indigo-400'}`} />
+                            <h3 className="font-bold text-lg">{t.roles.wholesaler}</h3>
+                            </button>
+                        </div>
+                    </div>
+
                     </div>
                 </div>
 
                 {/* Dynamic Solutions Section */}
-                <div id="solutions-section" className={`transition-all duration-500 bg-gray-50 border-t border-gray-200 ${activeRole ? 'block' : 'hidden'}`}>
+                <div id="solutions-section" className={`transition-all duration-500 bg-white border-t border-gray-200 ${activeRole ? 'block' : 'hidden'}`}>
                     {activeRole && (
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
                         <div className="flex justify-between items-end mb-10">
@@ -1306,12 +599,12 @@
 
                         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                         {opportunities[activeRole].map((opp) => (
-                            <div key={opp.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-xl hover:border-blue-200 transition-all p-8 flex flex-col h-full group">
+                            <div key={opp.id} className="bg-gray-50 rounded-2xl shadow-sm border border-gray-200 hover:shadow-xl hover:border-blue-200 transition-all p-8 flex flex-col h-full group">
                             <div className="flex justify-between items-start mb-6">
-                                <div className="bg-blue-50 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <div className="bg-white w-16 h-16 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
                                 {opp.icon}
                                 </div>
-                                <span className="inline-block bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full">
+                                <span className="inline-block bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">
                                 {opp.tag[lang]}
                                 </span>
                             </div>
@@ -1327,7 +620,7 @@
                             <p className="text-gray-600 leading-relaxed flex-grow">
                                 {opp.desc[lang]}
                             </p>
-                            <div className="mt-6 pt-6 border-t border-gray-100">
+                            <div className="mt-6 pt-6 border-t border-gray-200">
                                 <button 
                                    onClick={() => document.getElementById('contact').scrollIntoView({behavior: 'smooth'})}
                                    className="w-full flex items-center justify-center gap-2 text-blue-600 font-bold hover:bg-blue-50 py-3 rounded-lg transition"
@@ -1342,38 +635,81 @@
                     )}
                 </div>
 
-                {/* News Section */}
-                <div id="news" className="py-20 bg-white border-t border-gray-100">
+                {/* Strategic Pillars (Why Demandio) */}
+                <div id="pillars" className="py-20 bg-white border-t border-gray-200">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="text-center mb-16">
+                            <h2 className="text-3xl font-bold text-gray-900 mb-4">{t.pillars.title}</h2>
+                            <p className="text-xl text-gray-600 max-w-3xl mx-auto">{t.pillars.subtitle}</p>
+                        </div>
+                        
+                        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                            <div className="bg-gray-50 p-8 rounded-2xl hover:shadow-lg transition border border-gray-100">
+                                <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center mb-6">
+                                    <Euro className="w-8 h-8 text-green-600" />
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-3">{t.pillars.p1_title}</h3>
+                                <p className="text-gray-600 leading-relaxed">{t.pillars.p1_desc}</p>
+                            </div>
+                            <div className="bg-gray-50 p-8 rounded-2xl hover:shadow-lg transition border border-gray-100">
+                                <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-6">
+                                    <Leaf className="w-8 h-8 text-blue-600" />
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-3">{t.pillars.p2_title}</h3>
+                                <p className="text-gray-600 leading-relaxed">{t.pillars.p2_desc}</p>
+                            </div>
+                            <div className="bg-gray-50 p-8 rounded-2xl hover:shadow-lg transition border border-gray-100">
+                                <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center mb-6">
+                                    <Settings className="w-8 h-8 text-purple-600" />
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-3">{t.pillars.p3_title}</h3>
+                                <p className="text-gray-600 leading-relaxed">{t.pillars.p3_desc}</p>
+                            </div>
+                            <div className="bg-gray-50 p-8 rounded-2xl hover:shadow-lg transition border border-gray-100">
+                                <div className="w-14 h-14 bg-indigo-100 rounded-xl flex items-center justify-center mb-6">
+                                    <TrendingUp className="w-8 h-8 text-indigo-600" />
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-3">{t.pillars.p4_title}</h3>
+                                <p className="text-gray-600 leading-relaxed">{t.pillars.p4_desc}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* News Section (Dynamic) */}
+                <div id="news" className="py-20 bg-gray-50 border-t border-gray-200">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl font-bold text-gray-900 mb-2">{t.news.title}</h2>
                         <p className="text-gray-500">{t.news.subtitle}</p>
                     </div>
 
-                    <div className="grid md:grid-cols-3 gap-8">
-                        {(dbArticles.length > 0 ? dbArticles : t.news.items).map((item, idx) => {
-                             const isDb = !!item.created_at;
-                             const title = isDb ? (lang === 'en' ? item.title_en : item.title_nl) : item.title;
-                             const desc = isDb ? (lang === 'en' ? item.desc_en : item.desc_nl) : item.desc;
-                             const date = isDb ? new Date(item.created_at).toLocaleDateString() : item.date;
-                             const link = "news.html";
-
-                             return (
-                                <div key={idx} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition flex flex-col h-full relative group">
-                                    <a href={link} className="absolute inset-0 z-10"></a>
-                                    <div className="flex justify-between items-start mb-4">
-                                    <span className="text-xs font-bold bg-blue-100 text-blue-800 px-2 py-1 rounded relative z-20">{item.source}</span>
-                                    <span className="text-xs text-gray-400">{date}</span>
-                                    </div>
-                                    <h3 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">{title}</h3>
-                                    <p className="text-gray-600 text-sm flex-grow mb-4 line-clamp-3">{desc}</p>
-                                    <div className="text-blue-600 text-sm font-bold flex items-center gap-1 hover:underline mt-auto">
-                                    {t.news.read_more} <ExternalLink className="w-3 h-3" />
-                                    </div>
+                    {loadingNews ? (
+                        <div className="text-center py-10 flex flex-col items-center">
+                            <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-2" />
+                            <p className="text-gray-500">{t.news.loading}</p>
+                        </div>
+                    ) : newsItems.length === 0 ? (
+                         <div className="text-center py-10">
+                            <p className="text-gray-500">{t.news.empty}</p>
+                        </div>
+                    ) : (
+                        <div className="grid md:grid-cols-3 gap-8">
+                            {newsItems.map((item, idx) => (
+                            <div key={idx} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition flex flex-col h-full animate-fade-in">
+                                <div className="flex justify-between items-start mb-4">
+                                <span className="text-xs font-bold bg-blue-100 text-blue-800 px-2 py-1 rounded">{item.source || 'Demandio'}</span>
+                                <span className="text-xs text-gray-400">{new Date(item.published_at).toLocaleDateString()}</span>
                                 </div>
-                             );
-                        })}
-                    </div>
+                                <h3 className="font-bold text-lg text-gray-900 mb-2">{lang === 'en' ? item.title_en : item.title_nl}</h3>
+                                <p className="text-gray-600 text-sm flex-grow mb-4">{lang === 'en' ? item.desc_en : item.desc_nl}</p>
+                                <a href={`https://demandio.cloud/news.html?id=${item.id}`} className="text-blue-600 text-sm font-bold flex items-center gap-1 hover:underline mt-auto">
+                                {t.news.read_more} <ExternalLink className="w-3 h-3" />
+                                </a>
+                            </div>
+                            ))}
+                        </div>
+                    )}
                     </div>
                 </div>
 
@@ -1381,34 +717,38 @@
                    <div id="subsidyroadmap" className="py-24 bg-blue-900 text-white">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-4xl font-extrabold mb-4">{t.subsidy_roadmap.title}</h2>
-                        <p className="text-xl text-blue-200">{t.subsidy_roadmap.subtitle}</p>
+                        <h2 className="text-3xl md:text-4xl font-extrabold mb-4">{t.roadmap.title}</h2>
+                        <p className="text-xl text-blue-200">{t.roadmap.subtitle}</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                         {/* Step 1 */}
-                        <div className="bg-blue-800/50 p-6 rounded-xl border border-blue-700 hover:bg-blue-800 transition">
-                        <div className="text-4xl font-bold text-green-400 mb-4">01</div>
-                        <h3 className="text-xl font-bold mb-2">{t.subsidy_roadmap.step1}</h3>
-                        <p className="text-blue-200">{t.subsidy_roadmap.step1_desc}</p>
+                        <div className="bg-blue-800/50 p-6 rounded-xl border border-blue-700 hover:bg-blue-800 transition relative">
+                            <div className="absolute -top-4 -left-4 bg-green-500 w-10 h-10 rounded-full flex items-center justify-center font-bold text-blue-900">1</div>
+                            <LinkIcon className="w-8 h-8 text-blue-300 mb-4" />
+                            <h3 className="text-xl font-bold mb-2">{t.roadmap.step1}</h3>
+                            <p className="text-blue-200 text-sm">{t.roadmap.step1_desc}</p>
                         </div>
                         {/* Step 2 */}
-                        <div className="bg-blue-800/50 p-6 rounded-xl border border-blue-700 hover:bg-blue-800 transition">
-                        <div className="text-4xl font-bold text-green-400 mb-4">02</div>
-                        <h3 className="text-xl font-bold mb-2">{t.subsidy_roadmap.step2}</h3>
-                        <p className="text-blue-200">{t.subsidy_roadmap.step2_desc}</p>
+                        <div className="bg-blue-800/50 p-6 rounded-xl border border-blue-700 hover:bg-blue-800 transition relative">
+                            <div className="absolute -top-4 -left-4 bg-green-500 w-10 h-10 rounded-full flex items-center justify-center font-bold text-blue-900">2</div>
+                            <BarChart3 className="w-8 h-8 text-blue-300 mb-4" />
+                            <h3 className="text-xl font-bold mb-2">{t.roadmap.step2}</h3>
+                            <p className="text-blue-200 text-sm">{t.roadmap.step2_desc}</p>
                         </div>
                         {/* Step 3 */}
-                        <div className="bg-blue-800/50 p-6 rounded-xl border border-blue-700 hover:bg-blue-800 transition">
-                        <div className="text-4xl font-bold text-green-400 mb-4">03</div>
-                        <h3 className="text-xl font-bold mb-2">{t.subsidy_roadmap.step3}</h3>
-                        <p className="text-blue-200">{t.subsidy_roadmap.step3_desc}</p>
+                        <div className="bg-blue-800/50 p-6 rounded-xl border border-blue-700 hover:bg-blue-800 transition relative">
+                            <div className="absolute -top-4 -left-4 bg-green-500 w-10 h-10 rounded-full flex items-center justify-center font-bold text-blue-900">3</div>
+                            <Settings className="w-8 h-8 text-blue-300 mb-4" />
+                            <h3 className="text-xl font-bold mb-2">{t.roadmap.step3}</h3>
+                            <p className="text-blue-200 text-sm">{t.roadmap.step3_desc}</p>
                         </div>
                         {/* Step 4 */}
-                        <div className="bg-blue-800/50 p-6 rounded-xl border border-blue-700 hover:bg-blue-800 transition">
-                        <div className="text-4xl font-bold text-green-400 mb-4">04</div>
-                        <h3 className="text-xl font-bold mb-2">{t.subsidy_roadmap.step4}</h3>
-                        <p className="text-blue-200">{t.subsidy_roadmap.step4_desc}</p>
+                        <div className="bg-blue-800/50 p-6 rounded-xl border border-blue-700 hover:bg-blue-800 transition relative">
+                            <div className="absolute -top-4 -left-4 bg-green-500 w-10 h-10 rounded-full flex items-center justify-center font-bold text-blue-900">4</div>
+                            <TrendingUp className="w-8 h-8 text-blue-300 mb-4" />
+                            <h3 className="text-xl font-bold mb-2">{t.roadmap.step4}</h3>
+                            <p className="text-blue-200 text-sm">{t.roadmap.step4_desc}</p>
                         </div>
                     </div>
 
@@ -1417,8 +757,8 @@
                         onClick={() => document.getElementById('contact').scrollIntoView({behavior: 'smooth'})}
                         className="bg-green-500 hover:bg-green-400 text-blue-900 font-bold py-4 px-10 rounded-full shadow-lg transform hover:scale-105 transition-all flex items-center gap-2 mx-auto"
                         >
-                        <Banknote className="w-5 h-5" />
-                        {t.subsidy_roadmap.cta}
+                        <Network className="w-5 h-5" />
+                        {t.roadmap.cta}
                         </button>
                     </div>
                     </div>
@@ -1461,24 +801,20 @@
                 <div id="contact" className="bg-white py-20 border-t border-gray-200">
                     <div className="max-w-xl mx-auto px-4">
                     <div className="bg-white rounded-2xl shadow-xl p-8 md:p-10 border border-gray-100">
-                        {formSubmitted ? (
-                        <div className="text-center py-10">
+                        {formStatus === 'success' ? (
+                        <div className="text-center py-10 animate-fade-in">
                             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                             <CheckCircle className="w-10 h-10 text-green-600" />
                             </div>
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">Bedankt!</h3>
+                            <h3 className="text-2xl font-bold text-gray-900 mb-2">Success!</h3>
                             <p className="text-gray-600">{t.form.success}</p>
+                            <Loader2 className="w-6 h-6 animate-spin text-gray-400 mx-auto mt-4" />
                         </div>
                         ) : (
                         <form onSubmit={handleFormSubmit}>
                             <div className="text-center mb-8">
                             <h2 className="text-3xl font-bold text-gray-900">{t.form.title}</h2>
-                            <p className="text-gray-500 mt-2">
-                                {activeRole 
-                                ? (lang === 'en' ? `Unlock the potential for: ${t.roles[activeRole]}` : `Ontgrendel het potentieel voor: ${t.roles[activeRole]}`)
-                                : (lang === 'en' ? "Check your subsidy eligibility in 2 minutes." : "Check uw subsidie-aanmerking in 2 minuten.")
-                                }
-                            </p>
+                            <p className="text-gray-500 mt-2">{t.form.subtitle}</p>
                             </div>
 
                             <div className="space-y-4">
@@ -1554,10 +890,18 @@
                                     required
                                 >
                                     <option value="" disabled>{t.form.role_placeholder}</option>
-                                    <option value="owner">{t.roles.garage_owner}</option>
-                                    <option value="mechanic">{t.roles.mechanic}</option>
-                                    <option value="advisor">{t.roles.advisor}</option>
-                                    <option value="financial">{t.roles.financial}</option>
+                                    <optgroup label={t.roles.section_operational}>
+                                        <option value="owner">{t.roles.garage_owner}</option>
+                                        <option value="mechanic">{t.roles.mechanic}</option>
+                                        <option value="advisor">{t.roles.advisor}</option>
+                                        <option value="financial">{t.roles.financial}</option>
+                                        <option value="warehouse">{t.roles.warehouse}</option>
+                                    </optgroup>
+                                    <optgroup label={t.roles.section_strategic}>
+                                        <option value="formula_manager">{t.roles.formula_manager}</option>
+                                        <option value="association">{t.roles.association}</option>
+                                        <option value="wholesaler">{t.roles.wholesaler}</option>
+                                    </optgroup>
                                     <option value="other">{t.form.role_other}</option>
                                 </select>
                             </div>
@@ -1595,9 +939,18 @@
 
                             <button 
                                 type="submit" 
-                                className="w-full bg-blue-900 text-white font-bold text-lg py-4 rounded-lg hover:bg-blue-800 transition flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 mt-4"
+                                disabled={formStatus === 'submitting'}
+                                className={`w-full bg-blue-900 text-white font-bold text-lg py-4 rounded-lg hover:bg-blue-800 transition flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 mt-4 ${formStatus === 'submitting' ? 'opacity-75 cursor-not-allowed' : ''}`}
                             >
-                                {t.form.submit} <ArrowRight className="w-5 h-5" />
+                                {formStatus === 'submitting' ? (
+                                    <>
+                                        <Loader2 className="w-5 h-5 animate-spin" /> {t.form.submitting}
+                                    </>
+                                ) : (
+                                    <>
+                                        {t.form.submit} <ArrowRight className="w-5 h-5" />
+                                    </>
+                                )}
                             </button>
                             </div>
                         </form>
@@ -1624,7 +977,7 @@
         };
 
         const root = createRoot(document.getElementById('root'));
-        root.render(<Demandio />);
+        root.render(<DemandioLanding />);
     </script>
 </body>
 </html>
